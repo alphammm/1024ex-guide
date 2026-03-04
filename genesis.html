@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AgentX Genesis — 1024EX</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --cyan:#00d4c8;
+  --cyan-dim:rgba(0,212,200,.12);
+  --cyan-glow:rgba(0,212,200,.25);
+  --bg:#050510;
+  --surface:#0b0b1e;
+  --surface2:#10102a;
+  --border:rgba(255,255,255,.06);
+  --border-h:rgba(0,212,200,.25);
+  --t1:#f0f0f8;
+  --t2:#9494b8;
+  --t3:#5a5a7a;
+  --red:#ff4d4d;
+  --green:#00e676;
+  --gold:#ffd600;
+  --purple:#a855f7;
+  --purple-dim:rgba(168,85,247,.12);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Inter','Segoe UI','PingFang SC',sans-serif;
+  background:var(--bg);color:var(--t1);
+  line-height:1.7;-webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+
+/* ===== Grid BG ===== */
+.grid-bg{
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:
+    linear-gradient(var(--border) 1px,transparent 1px),
+    linear-gradient(90deg,var(--border) 1px,transparent 1px);
+  background-size:64px 64px;
+  mask-image:radial-gradient(ellipse 80% 60% at 50% 30%,rgba(0,0,0,.35),transparent);
+  -webkit-mask-image:radial-gradient(ellipse 80% 60% at 50% 30%,rgba(0,0,0,.35),transparent);
+}
+
+/* ===== DNA Canvas BG ===== */
+#dnaCanvas{
+  position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.15;
+}
+
+/* ===== Top Bar ===== */
+.topbar{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  padding:0 2rem;height:56px;
+  display:flex;align-items:center;justify-content:space-between;
+  background:rgba(5,5,16,.7);backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+}
+.logo{font-weight:800;font-size:1.1rem;letter-spacing:-.5px}
+.logo span{color:var(--cyan)}
+.logo .gen{color:var(--purple);font-size:.7rem;font-weight:600;margin-left:6px;
+  padding:2px 8px;border-radius:4px;background:var(--purple-dim);vertical-align:middle}
+.topbar-links{display:flex;gap:1.5rem;align-items:center}
+.topbar-links a{color:var(--t2);text-decoration:none;font-size:.82rem;font-weight:500;transition:color .2s}
+.topbar-links a:hover{color:var(--cyan)}
+.btn-sm{
+  padding:7px 18px;background:var(--cyan);color:var(--bg);
+  border-radius:8px;font-weight:600;font-size:.82rem;
+  text-decoration:none;transition:all .2s;
+}
+.btn-sm:hover{box-shadow:0 0 20px var(--cyan-glow)}
+
+/* ===== Layout ===== */
+.container{position:relative;z-index:1;max-width:1080px;margin:0 auto;padding:0 2rem}
+
+/* ===== Hero ===== */
+.hero{
+  min-height:100vh;display:flex;align-items:center;
+  justify-content:center;text-align:center;
+  padding:120px 2rem 80px;position:relative;
+}
+.hero::after{
+  content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);
+  width:700px;height:700px;
+  background:radial-gradient(circle,rgba(168,85,247,.06) 0%,rgba(0,212,200,.04) 40%,transparent 70%);
+  pointer-events:none;
+}
+.hero-inner{position:relative;z-index:1;max-width:780px}
+.hero-chip{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:5px 14px;border-radius:100px;
+  background:var(--purple-dim);border:1px solid rgba(168,85,247,.3);
+  font-size:.72rem;font-weight:600;color:var(--purple);
+  letter-spacing:.5px;text-transform:uppercase;margin-bottom:1.5rem;
+}
+.hero-chip .dot{width:6px;height:6px;border-radius:50%;background:var(--purple);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(168,85,247,.4)}50%{box-shadow:0 0 0 6px transparent}}
+
+.hero h1{
+  font-size:clamp(2.4rem,5.5vw,3.8rem);font-weight:900;
+  line-height:1.15;margin-bottom:1.2rem;letter-spacing:-.02em;
+}
+.hero h1 .accent{
+  background:linear-gradient(135deg,var(--cyan),var(--purple));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+.hero .sub{color:var(--t2);font-size:1.05rem;max-width:600px;margin:0 auto 2.5rem}
+
+.hero-actions{display:flex;gap:.8rem;justify-content:center;flex-wrap:wrap}
+.btn-main{
+  padding:13px 32px;border-radius:10px;font-size:.95rem;font-weight:600;
+  border:none;cursor:pointer;transition:all .25s;text-decoration:none;
+}
+.btn-cyan{background:linear-gradient(135deg,var(--cyan),var(--purple));color:#fff}
+.btn-cyan:hover{box-shadow:0 4px 30px var(--cyan-glow),0 4px 30px rgba(168,85,247,.2);transform:translateY(-1px)}
+.btn-outline{background:transparent;color:var(--t1);border:1px solid var(--border)}
+.btn-outline:hover{border-color:var(--cyan);color:var(--cyan)}
+
+/* ===== Stats Bar ===== */
+.stats-bar{
+  display:flex;justify-content:center;gap:3rem;flex-wrap:wrap;
+  padding:2rem 0;margin-top:3rem;
+  border-top:1px solid var(--border);border-bottom:1px solid var(--border);
+}
+.stat{text-align:center}
+.stat .val{font-size:1.6rem;font-weight:800;display:block}
+.stat .val.cyan{color:var(--cyan)}
+.stat .val.purple{color:var(--purple)}
+.stat .val.green{color:var(--green)}
+.stat .val.gold{color:var(--gold)}
+.stat .lbl{font-size:.72rem;color:var(--t3);text-transform:uppercase;letter-spacing:1px;margin-top:2px}
+
+/* ===== Sections ===== */
+.sec{padding:100px 0}
+.sec-label{
+  display:inline-block;padding:3px 12px;border-radius:6px;
+  font-size:.68rem;font-weight:700;letter-spacing:1.5px;
+  text-transform:uppercase;margin-bottom:.8rem;
+}
+.sec-label.cyan{background:var(--cyan-dim);color:var(--cyan)}
+.sec-label.purple{background:var(--purple-dim);color:var(--purple)}
+.sec-label.gold{background:rgba(255,214,0,.08);color:var(--gold)}
+.sec-label.green{background:rgba(0,230,118,.08);color:var(--green)}
+.sec-label.red{background:rgba(255,77,77,.08);color:var(--red)}
+.sec-head{margin-bottom:3.5rem}
+.sec-head.center{text-align:center}
+.sec-head h2{font-size:2rem;font-weight:800;letter-spacing:-.01em;margin-bottom:.5rem}
+.sec-head p{color:var(--t2);font-size:.95rem;max-width:580px}
+.sec-head.center p{margin:0 auto}
+
+/* ===== Gene System Cards ===== */
+.gene-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:1.2rem}
+.gene-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:14px;
+  padding:2rem 1.5rem;position:relative;overflow:hidden;transition:all .3s;
+}
+.gene-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  opacity:0;transition:opacity .3s;
+}
+.gene-card:nth-child(1)::before{background:linear-gradient(90deg,#ff4d4d,#ff8a80)}
+.gene-card:nth-child(2)::before{background:linear-gradient(90deg,var(--cyan),#00e5ff)}
+.gene-card:nth-child(3)::before{background:linear-gradient(90deg,var(--gold),#ffab00)}
+.gene-card:hover{border-color:var(--border-h);transform:translateY(-4px)}
+.gene-card:hover::before{opacity:1}
+.gene-icon{font-size:2rem;margin-bottom:1rem;display:block}
+.gene-card h3{font-size:1.05rem;font-weight:700;margin-bottom:.5rem}
+.gene-card p{font-size:.85rem;color:var(--t2);line-height:1.7}
+.gene-tag{
+  display:inline-block;margin-top:.8rem;padding:3px 10px;border-radius:5px;
+  font-size:.7rem;font-weight:600;
+}
+.gene-tag.red{background:rgba(255,77,77,.1);color:var(--red)}
+.gene-tag.cyan{background:var(--cyan-dim);color:var(--cyan)}
+.gene-tag.gold{background:rgba(255,214,0,.1);color:var(--gold)}
+
+/* ===== Radar Chart ===== */
+.radar-wrap{
+  display:flex;align-items:center;justify-content:center;gap:3rem;
+  margin-top:3rem;flex-wrap:wrap;
+}
+.radar-container{position:relative}
+.radar-info{max-width:320px}
+.radar-info h3{font-size:1.3rem;font-weight:800;margin-bottom:.5rem}
+.radar-info p{font-size:.88rem;color:var(--t2);margin-bottom:1rem}
+.chromosome-list{display:flex;flex-direction:column;gap:.5rem}
+.chromo{
+  display:flex;align-items:center;gap:.6rem;padding:6px 10px;
+  background:var(--surface);border-radius:8px;border:1px solid var(--border);
+  font-size:.8rem;
+}
+.chromo-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.chromo-dot.red{background:#ff4d4d}
+.chromo-dot.cyan{background:var(--cyan)}
+.chromo-dot.gold{background:var(--gold)}
+.chromo-dot.purple{background:var(--purple)}
+
+/* ===== Breeding Flow ===== */
+.breed-flow{display:flex;gap:0;position:relative;align-items:flex-start}
+.breed-flow::before{
+  content:'';position:absolute;top:22px;left:22px;right:22px;height:2px;
+  background:linear-gradient(90deg,var(--purple),var(--cyan),var(--purple));
+}
+.breed-step{flex:1;position:relative;z-index:1;padding-right:1rem}
+.breed-num{
+  width:44px;height:44px;border-radius:50%;
+  background:var(--surface);border:2px solid var(--purple);
+  display:flex;align-items:center;justify-content:center;
+  font-size:.85rem;font-weight:800;color:var(--purple);margin-bottom:1rem;
+}
+.breed-step h4{font-size:.9rem;font-weight:700;margin-bottom:.3rem}
+.breed-step p{font-size:.8rem;color:var(--t2);line-height:1.6}
+
+/* ===== Breeding Preview ===== */
+.breed-preview{
+  background:var(--surface);border:1px solid var(--border);border-radius:16px;
+  padding:2rem;margin-top:2.5rem;
+}
+.breed-preview-inner{display:flex;align-items:center;justify-content:center;gap:1.5rem;flex-wrap:wrap}
+.breed-agent{
+  text-align:center;padding:1rem;background:var(--surface2);
+  border-radius:12px;border:1px solid var(--border);min-width:180px;
+  cursor:pointer;transition:all .3s;
+}
+.breed-agent:hover{border-color:var(--purple)}
+.breed-agent.selected{border-color:var(--cyan);box-shadow:0 0 20px rgba(0,212,200,.15)}
+.breed-agent-name{font-size:.9rem;font-weight:700;margin-top:.5rem}
+.breed-agent-type{font-size:.72rem;color:var(--t3)}
+.breed-symbol{font-size:2.5rem;color:var(--purple);font-weight:900;align-self:center}
+.breed-result{
+  text-align:center;padding:1.2rem;background:var(--surface2);
+  border-radius:12px;border:2px dashed var(--border);min-width:200px;
+  transition:all .5s;
+}
+.breed-result.active{border-color:var(--cyan);border-style:solid;
+  box-shadow:0 0 30px rgba(0,212,200,.1)}
+.breed-result-label{font-size:.75rem;color:var(--t3);margin-top:.5rem}
+
+/* ===== Opportunity Feed ===== */
+.opp-feed{display:flex;flex-direction:column;gap:.8rem;max-height:500px;overflow:hidden;position:relative}
+.opp-feed::after{
+  content:'';position:absolute;bottom:0;left:0;right:0;height:80px;
+  background:linear-gradient(transparent,var(--bg));pointer-events:none;
+}
+.opp{
+  display:flex;align-items:center;gap:1rem;
+  padding:1rem 1.2rem;background:var(--surface);
+  border:1px solid var(--border);border-radius:12px;
+  transition:all .3s;animation:oppSlide .6s ease;
+}
+@keyframes oppSlide{from{opacity:0;transform:translateX(-20px)}to{opacity:1;transform:translateX(0)}}
+.opp:hover{border-color:var(--border-h);transform:translateX(4px)}
+.opp-icon{font-size:1.5rem;min-width:36px;text-align:center}
+.opp-info{flex:1}
+.opp-title{font-size:.88rem;font-weight:600}
+.opp-desc{font-size:.78rem;color:var(--t2)}
+.opp-meta{display:flex;gap:.8rem;margin-top:4px}
+.opp-tag{font-size:.68rem;padding:2px 8px;border-radius:4px;font-weight:600}
+.opp-tag.high{background:rgba(0,230,118,.1);color:var(--green)}
+.opp-tag.mid{background:rgba(255,214,0,.1);color:var(--gold)}
+.opp-tag.low{background:rgba(255,77,77,.1);color:var(--red)}
+.opp-tag.time{background:var(--cyan-dim);color:var(--cyan)}
+.opp-return{font-size:.9rem;font-weight:700;color:var(--green);min-width:60px;text-align:right}
+
+/* ===== Agent Gallery ===== */
+.agent-gallery{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem}
+.ag{
+  background:var(--surface);border:1px solid var(--border);border-radius:12px;
+  padding:1rem;text-align:center;transition:all .3s;cursor:pointer;
+  position:relative;overflow:hidden;
+}
+.ag::after{
+  content:'';position:absolute;inset:0;opacity:0;transition:opacity .3s;
+  background:radial-gradient(circle at 50% 30%,rgba(0,212,200,.06),transparent 70%);
+}
+.ag:hover{border-color:var(--border-h);transform:translateY(-3px)}
+.ag:hover::after{opacity:1}
+.ag-mini-radar{width:80px;height:80px;margin:0 auto .5rem}
+.ag-name{font-size:.85rem;font-weight:700}
+.ag-type{font-size:.7rem;color:var(--t3)}
+.ag-risk{
+  display:inline-block;margin-top:4px;padding:2px 6px;border-radius:3px;
+  font-size:.62rem;font-weight:600;
+}
+.ag-risk.con{background:rgba(0,230,118,.1);color:var(--green)}
+.ag-risk.bal{background:rgba(0,212,200,.1);color:var(--cyan)}
+.ag-risk.agg{background:rgba(255,214,0,.1);color:var(--gold)}
+.ag-risk.deg{background:rgba(255,77,77,.1);color:var(--red)}
+
+/* ===== Agent Detail Modal ===== */
+.modal-overlay{
+  position:fixed;inset:0;z-index:200;background:rgba(5,5,16,.85);
+  backdrop-filter:blur(10px);display:none;align-items:center;justify-content:center;
+}
+.modal-overlay.show{display:flex}
+.modal{
+  background:var(--surface);border:1px solid var(--border);border-radius:20px;
+  padding:2.5rem;max-width:560px;width:90%;position:relative;
+  animation:modalIn .3s ease;
+}
+@keyframes modalIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
+.modal-close{
+  position:absolute;top:1rem;right:1rem;background:none;border:none;
+  color:var(--t3);font-size:1.5rem;cursor:pointer;transition:color .2s;
+}
+.modal-close:hover{color:var(--t1)}
+.modal-header{display:flex;align-items:center;gap:1.5rem;margin-bottom:1.5rem}
+.modal-radar{width:140px;height:140px}
+.modal-info h3{font-size:1.3rem;font-weight:800}
+.modal-info .modal-type{font-size:.82rem;color:var(--t2)}
+.modal-genes{display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-top:1rem}
+.modal-gene{
+  display:flex;justify-content:space-between;padding:6px 10px;
+  background:var(--surface2);border-radius:6px;font-size:.78rem;
+}
+.modal-gene span:last-child{font-weight:600;color:var(--cyan)}
+
+/* ===== Intent Demo ===== */
+.intent-demo{
+  background:var(--surface);border:1px solid var(--border);border-radius:16px;
+  padding:2rem;max-width:680px;margin:0 auto;
+}
+.intent-input-wrap{
+  display:flex;gap:.8rem;margin-bottom:1.5rem;
+}
+.intent-input{
+  flex:1;padding:12px 16px;background:var(--surface2);
+  border:1px solid var(--border);border-radius:10px;
+  color:var(--t1);font-family:inherit;font-size:.9rem;
+  outline:none;transition:border-color .3s;
+}
+.intent-input:focus{border-color:var(--cyan)}
+.intent-input::placeholder{color:var(--t3)}
+.intent-btn{
+  padding:12px 24px;background:linear-gradient(135deg,var(--cyan),var(--purple));
+  border:none;border-radius:10px;color:#fff;font-weight:700;
+  font-size:.85rem;cursor:pointer;transition:all .3s;white-space:nowrap;
+}
+.intent-btn:hover{box-shadow:0 4px 20px rgba(0,212,200,.3)}
+.intent-response{
+  background:var(--surface2);border:1px solid var(--border);border-radius:12px;
+  padding:1.2rem 1.5rem;font-size:.85rem;color:var(--t2);
+  min-height:120px;position:relative;overflow:hidden;
+}
+.intent-response .typing{color:var(--cyan);animation:blink 1s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+.alloc-bar{
+  display:flex;height:8px;border-radius:4px;overflow:hidden;margin:8px 0;
+}
+.alloc-seg{height:100%;transition:width .5s}
+
+/* ===== FAQ ===== */
+.faq-list{display:flex;flex-direction:column;gap:.6rem;max-width:680px;margin:0 auto}
+.fq{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:10px;overflow:hidden;transition:border-color .3s;
+}
+.fq.active{border-color:var(--border-h)}
+.fq-q{
+  padding:1rem 1.2rem;cursor:pointer;display:flex;
+  justify-content:space-between;align-items:center;
+  font-size:.9rem;font-weight:600;user-select:none;
+}
+.fq-q:hover{color:var(--cyan)}
+.fq-arr{color:var(--t3);transition:transform .3s;font-size:.8rem}
+.fq.active .fq-arr{transform:rotate(180deg)}
+.fq-a{max-height:0;overflow:hidden;transition:max-height .4s}
+.fq-a-in{padding:0 1.2rem 1rem;font-size:.85rem;color:var(--t2)}
+
+/* ===== Viral Mechanics ===== */
+.viral-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
+.viral{
+  background:var(--surface);border:1px solid var(--border);border-radius:14px;
+  padding:1.5rem;transition:all .3s;
+}
+.viral:hover{border-color:var(--border-h);transform:translateY(-3px)}
+.viral-icon{font-size:1.6rem;margin-bottom:.6rem;display:block}
+.viral h3{font-size:.9rem;font-weight:700;margin-bottom:.3rem}
+.viral p{font-size:.8rem;color:var(--t2)}
+
+/* ===== CTA ===== */
+.cta{text-align:center;padding:80px 0 120px}
+.cta h2{font-size:1.8rem;font-weight:800;margin-bottom:.6rem}
+.cta p{color:var(--t2);margin-bottom:1.5rem}
+.cta-btns{display:flex;gap:.8rem;justify-content:center;flex-wrap:wrap}
+
+/* ===== Divider ===== */
+.divider{height:1px;background:var(--border);margin:0 auto;max-width:500px}
+
+/* ===== Animations ===== */
+.fi{opacity:0;transform:translateY(20px);transition:all .6s cubic-bezier(.16,1,.3,1)}
+.fi.visible{opacity:1;transform:translateY(0)}
+
+/* ===== Responsive ===== */
+@media(max-width:900px){
+  .gene-cards,.viral-grid{grid-template-columns:1fr 1fr}
+  .agent-gallery{grid-template-columns:repeat(3,1fr)}
+  .breed-flow{flex-direction:column;gap:1rem}
+  .breed-flow::before{display:none}
+  .radar-wrap{flex-direction:column}
+  .breed-preview-inner{flex-direction:column}
+}
+@media(max-width:600px){
+  .gene-cards,.viral-grid,.agent-gallery{grid-template-columns:1fr 1fr}
+  .topbar-links a:not(.btn-sm){display:none}
+  .stats-bar{gap:1.5rem}
+  .hero h1{font-size:2rem}
+  .agent-gallery{grid-template-columns:repeat(2,1fr)}
+}
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<canvas id="dnaCanvas"></canvas>
+
+<!-- Top Bar -->
+<header class="topbar">
+  <div class="logo">1024<span>EX</span><span class="gen">GENESIS</span></div>
+  <div class="topbar-links">
+    <a href="#genes">Genes</a>
+    <a href="#breeding">Breeding</a>
+    <a href="#agents">Agents</a>
+    <a href="#hunt">Hunt</a>
+    <a href="./dashboard.html" class="btn-sm">Launch Dashboard</a>
+  </div>
+</header>
+
+<div class="container">
+
+<!-- ===== Hero ===== -->
+<section class="hero" id="hero">
+<div class="hero-inner">
+  <div class="hero-chip"><span class="dot"></span> AgentX Genesis</div>
+  <h1>Your Agent Has DNA.<br>Let It <span class="accent">Evolve.</span></h1>
+  <p class="sub">16 基因 x 4 染色体 = 策略 DNA。繁殖进化而非人工设计。全网猎金，让 Agent 替你赚钱。</p>
+  <div class="hero-actions">
+    <a href="./dashboard.html" class="btn-main btn-cyan">Hatch My Agent</a>
+    <a href="#genes" class="btn-main btn-outline">Explore Gene System</a>
+  </div>
+  <div class="stats-bar">
+    <div class="stat"><span class="val cyan">16</span><span class="lbl">Genesis Agents</span></div>
+    <div class="stat"><span class="val purple">64</span><span class="lbl">Gene Dimensions</span></div>
+    <div class="stat"><span class="val green">7x24</span><span class="lbl">全网猎金</span></div>
+    <div class="stat"><span class="val gold">2.5%</span><span class="lbl">后代分润</span></div>
+  </div>
+</div>
+</section>
+
+<!-- ===== Gene System ===== -->
+<section class="sec" id="genes">
+<div class="sec-head center fi">
+  <div class="sec-label purple">GENE SYSTEM</div>
+  <h2>策略 DNA — 不是设计的，是进化的</h2>
+  <p>每个 Agent 拥有 16 维基因组，决定它追什么机会、下多大仓、用什么止损</p>
+</div>
+<div class="gene-cards fi">
+  <div class="gene-card">
+    <span class="gene-icon">🧬</span>
+    <h3>DNA 驱动交易</h3>
+    <p>4 条染色体 × 4 个基因 = 16 维策略空间。风险性格、市场直觉、资产偏好、智能风格 — 基因值 0.0~1.0 精确控制</p>
+    <span class="gene-tag red">4 染色体 × 4 基因</span>
+  </div>
+  <div class="gene-card">
+    <span class="gene-icon">🔀</span>
+    <h3>繁殖进化</h3>
+    <p>染色体级交叉 + 8% 标准突变 + 0.5% 传奇突变。两个成功 Agent 配对，后代继承双亲优势并可能产生超越父母的变异</p>
+    <span class="gene-tag cyan">遗传算法</span>
+  </div>
+  <div class="gene-card">
+    <span class="gene-icon">🌐</span>
+    <h3>全网猎金</h3>
+    <p>扫描 Polymarket、DEX、DeFi、期货、大宗商品全网赚钱机会。Agent 基因决定追哪些猎物 — 高风险猎手 vs 稳健农夫</p>
+    <span class="gene-tag gold">7 大机会类别</span>
+  </div>
+</div>
+
+<!-- Live Radar Demo -->
+<div class="radar-wrap fi">
+  <div class="radar-container">
+    <canvas id="radarDemo" width="300" height="300"></canvas>
+  </div>
+  <div class="radar-info">
+    <h3>16 轴策略雷达图</h3>
+    <p>可视化 Agent 的完整基因组。每个轴代表一个基因维度，越靠外表示倾向越强。</p>
+    <div class="chromosome-list">
+      <div class="chromo"><span class="chromo-dot red"></span>风险性格 — risk, drawdown, position, leverage</div>
+      <div class="chromo"><span class="chromo-dot cyan"></span>市场直觉 — trend, volatility, horizon, correlation</div>
+      <div class="chromo"><span class="chromo-dot gold"></span>资产偏好 — crypto, prediction, commodity, defi</div>
+      <div class="chromo"><span class="chromo-dot purple"></span>智能风格 — technical, sentiment, fundamental, event</div>
+    </div>
+  </div>
+</div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ===== Breeding ===== -->
+<section class="sec" id="breeding">
+<div class="sec-head center fi">
+  <div class="sec-label purple">BREEDING LAB</div>
+  <h2>繁殖实验室 — "我的 Agent 和你的配一下？"</h2>
+  <p>选择两个成功 Agent，让它们繁殖后代。策略不是人设计的，是进化出来的。</p>
+</div>
+<div class="breed-flow fi">
+  <div class="breed-step">
+    <div class="breed-num">1</div>
+    <h4>选择双亲</h4>
+    <p>从你的 Agent 和公开排行榜中选择两个表现优秀的 Agent 作为父母</p>
+  </div>
+  <div class="breed-step">
+    <div class="breed-num">2</div>
+    <h4>基因交叉</h4>
+    <p>每条染色体: 25% 随父 / 25% 随母 / 50% 混合重组。产生新组合</p>
+  </div>
+  <div class="breed-step">
+    <div class="breed-num">3</div>
+    <h4>突变检测</h4>
+    <p>8% 标准突变（±0.15 偏移）+ 0.5% 传奇突变（完全随机重置）</p>
+  </div>
+  <div class="breed-step">
+    <div class="breed-num">4</div>
+    <h4>孵化上线</h4>
+    <p>后代 Agent 继承策略特征并开始交易。利润 2.5% 永久归双亲主人</p>
+  </div>
+</div>
+
+<!-- Breeding Preview -->
+<div class="breed-preview fi">
+  <p style="font-size:.82rem;color:var(--t3);text-align:center;margin-bottom:1rem">点击选择两个 Agent 预览繁殖效果</p>
+  <div class="breed-preview-inner">
+    <div class="breed-agent selected" data-agent="atlas" onclick="selectParent(this,0)">
+      <canvas class="breed-radar" width="80" height="80"></canvas>
+      <div class="breed-agent-name">Atlas</div>
+      <div class="breed-agent-type">S01 稳定币收益</div>
+    </div>
+    <div class="breed-symbol">×</div>
+    <div class="breed-agent selected" data-agent="chaos" onclick="selectParent(this,1)">
+      <canvas class="breed-radar" width="80" height="80"></canvas>
+      <div class="breed-agent-name">Chaos</div>
+      <div class="breed-agent-type">S08 Degen 山寨</div>
+    </div>
+    <div class="breed-symbol">=</div>
+    <div class="breed-result active" id="breedResult">
+      <canvas id="offspringRadar" width="100" height="100"></canvas>
+      <div class="breed-agent-name" id="offspringName">???</div>
+      <div class="breed-result-label">点击 "Breed" 查看后代</div>
+    </div>
+  </div>
+  <div style="text-align:center;margin-top:1.2rem">
+    <button class="btn-main btn-cyan" onclick="breedAgents()" style="font-family:inherit">Breed Now</button>
+  </div>
+</div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ===== Opportunity Feed ===== -->
+<section class="sec" id="hunt">
+<div class="sec-head center fi">
+  <div class="sec-label gold">OPPORTUNITY SCANNER</div>
+  <h2>全网猎金 — Agent 不只在一个平台赚钱</h2>
+  <p>实时扫描预测市场、DEX、DeFi、期货 7 大类别赚钱机会</p>
+</div>
+<div class="opp-feed fi" id="oppFeed">
+  <!-- JS populates -->
+</div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ===== 16 Genesis Agents ===== -->
+<section class="sec" id="agents">
+<div class="sec-head center fi">
+  <div class="sec-label cyan">GENERATION ZERO</div>
+  <h2>16 个初代 Agent — 创世种群</h2>
+  <p>映射 S01-S16 策略为创世基因组，它们是所有后代的祖先</p>
+</div>
+<div class="agent-gallery fi" id="agentGallery">
+  <!-- JS populates -->
+</div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ===== Intent Demo ===== -->
+<section class="sec" id="intent">
+<div class="sec-head center fi">
+  <div class="sec-label green">INTENT ENGINE</div>
+  <h2>说出目标，Agent 自动规划</h2>
+  <p>"我有 500U 想日赚 50U" — Agent 解析意图，全网扫描，多平台策略方案</p>
+</div>
+<div class="intent-demo fi">
+  <div class="intent-input-wrap">
+    <input class="intent-input" id="intentInput" placeholder="例: 我有 500U，想日赚 50U，中等风险" value="我有 500U，想日赚 50U，中等风险">
+    <button class="intent-btn" onclick="runIntent()">Ask Agent</button>
+  </div>
+  <div class="intent-response" id="intentResponse">
+    <span style="color:var(--t3)">输入你的赚钱目标，Agent 会自动规划全网策略方案...</span>
+  </div>
+</div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ===== Viral Mechanics ===== -->
+<section class="sec" id="viral">
+<div class="sec-head center fi">
+  <div class="sec-label red">VIRAL MECHANICS</div>
+  <h2>为什么能大火</h2>
+  <p>六大病毒机制驱动自然增长</p>
+</div>
+<div class="viral-grid fi">
+  <div class="viral">
+    <span class="viral-icon">📊</span>
+    <h3>数字即营销</h3>
+    <p>每笔盈利自动生成分享卡。"我的 Agent 今天赚了 $500" — 数据驱动传播</p>
+  </div>
+  <div class="viral">
+    <span class="viral-icon">💑</span>
+    <h3>繁殖社交</h3>
+    <p>"我的 Agent 和你的配一下？" — 天然社交话题，DNA 配对自带传播属性</p>
+  </div>
+  <div class="viral">
+    <span class="viral-icon">⭐</span>
+    <h3>收藏属性</h3>
+    <p>16 个初代 Agent 是创世版。稀有突变 = 传奇 Agent，0.5% 概率 = 社区竞赛</p>
+  </div>
+  <div class="viral">
+    <span class="viral-icon">🔗</span>
+    <h3>Fork 裂变</h3>
+    <p>后代 Agent 利润 2.5% 永久分给双亲主人。繁殖越多，被动收入越多</p>
+  </div>
+  <div class="viral">
+    <span class="viral-icon">🏟</span>
+    <h3>竞技场</h3>
+    <p>每周 Agent 对战锦标赛 + ELO 排名。观赛、押注、学习顶级 Agent 的基因组</p>
+  </div>
+  <div class="viral">
+    <span class="viral-icon">🗣</span>
+    <h3>意图驱动</h3>
+    <p>"我有 500U 想日赚 50U" → Agent 自动全网规划。零门槛、零学习成本</p>
+  </div>
+</div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ===== FAQ ===== -->
+<section class="sec" id="faq">
+<div class="sec-head center fi">
+  <div class="sec-label cyan">FAQ</div>
+  <h2>常见问题</h2>
+</div>
+<div class="faq-list fi">
+  <div class="fq"><div class="fq-q" onclick="tFaq(this)">什么是 Agent 基因？跟 AI 有什么关系？<span class="fq-arr">▾</span></div><div class="fq-a"><div class="fq-a-in">Agent 基因是 16 个 0.0-1.0 的数值，分布在 4 条染色体上（风险性格、市场直觉、资产偏好、智能风格）。它们决定 AI Agent 的交易决策风格 — 比如 risk_tolerance=0.9 的 Agent 会追逐高波动机会，而 risk_tolerance=0.1 的则偏好稳健收益。AI（Claude API）是 Agent 的大脑，基因是 AI 决策的"性格参数"。</div></div></div>
+  <div class="fq"><div class="fq-q" onclick="tFaq(this)">繁殖出来的 Agent 真的比父母强吗？<span class="fq-arr">▾</span></div><div class="fq-a"><div class="fq-a-in">不保证，但概率上有优势。通过遗传算法（交叉+突变），后代可能继承双亲的优势基因并产生新的组合。类似自然界的进化 — 优秀个体的后代更有可能优秀。加上 0.5% 的传奇突变，偶尔会出现超越所有祖先的变异个体。但也有可能继承了双方的弱点。这就是进化的魅力。</div></div></div>
+  <div class="fq"><div class="fq-q" onclick="tFaq(this)">2.5% 后代分润怎么算？<span class="fq-arr">▾</span></div><div class="fq-a"><div class="fq-a-in">当后代 Agent 产生利润时，2.5% 永久归双亲的两位主人平分（各 1.25%）。这是持续的被动收入 — 你的 Agent 繁殖出越多成功的后代，你的收入流越多。分润只从利润中扣，亏损时不收。</div></div></div>
+  <div class="fq"><div class="fq-q" onclick="tFaq(this)">初代 Agent 和后代有什么区别？<span class="fq-arr">▾</span></div><div class="fq-a"><div class="fq-a-in">16 个初代 Agent（Generation 0）是由 S01-S16 策略映射而来的创世种群，基因参数经过专业设计和回测验证。后代通过繁殖产生，基因组是父母的混合+突变。初代更像"纯种"，后代更像"混血" — 可能更强也可能更弱，但多样性更高。初代有收藏属性。</div></div></div>
+  <div class="fq"><div class="fq-q" onclick="tFaq(this)">需要多少资金才能开始？<span class="fq-arr">▾</span></div><div class="fq-a"><div class="fq-a-in">孵化（Hatch）一个 Agent 免费。繁殖需要 5 USDC + 24 小时冷却。Agent 交易所需的最低资金取决于选择的策略 — 稳定币收益策略最低 50 USDC，杠杆动量策略建议 200+ USDC。你可以先用模拟模式体验。</div></div></div>
+  <div class="fq"><div class="fq-q" onclick="tFaq(this)">全网猎金扫描的是真实数据吗？<span class="fq-arr">▾</span></div><div class="fq-a"><div class="fq-a-in">是的。扫描器接入 Polymarket、DexScreener、DefiLlama、经济日历等真实数据源。每个机会带有预期收益、置信度、风险等级、时效性等维度。Agent 基因决定追哪些机会 — 高 prediction_affinity 的 Agent 会优先追预测市场套利，高 defi_affinity 的会追 DeFi 收益池。</div></div></div>
+</div>
+</section>
+
+<!-- ===== CTA ===== -->
+<section class="cta fi">
+  <h2>Ready to <span style="background:linear-gradient(135deg,var(--cyan),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">Evolve</span>?</h2>
+  <p>孵化你的 Agent，让基因进化替你交易</p>
+  <div class="cta-btns">
+    <a href="./dashboard.html" class="btn-main btn-cyan">Launch Dashboard</a>
+    <a href="./index.html" class="btn-main btn-outline">1024EX Guide</a>
+    <a href="./agent.html" class="btn-main btn-outline">Agent API</a>
+  </div>
+</section>
+
+</div>
+
+<!-- ===== Agent Detail Modal ===== -->
+<div class="modal-overlay" id="agentModal" onclick="if(event.target===this)closeModal()">
+<div class="modal">
+  <button class="modal-close" onclick="closeModal()">&times;</button>
+  <div class="modal-header">
+    <canvas class="modal-radar" id="modalRadar" width="140" height="140"></canvas>
+    <div class="modal-info">
+      <h3 id="modalName"></h3>
+      <div class="modal-type" id="modalType"></div>
+    </div>
+  </div>
+  <div class="modal-genes" id="modalGenes"></div>
+</div>
+</div>
+
+<script>
+// ===== Agent Data =====
+const GENE_LABELS = [
+  'risk_tolerance','max_drawdown','position_size','leverage',
+  'trend_sense','volatility','time_horizon','correlation',
+  'crypto','prediction','commodity','defi',
+  'technical','sentiment','fundamental','event'
+];
+const CHROMO_COLORS = ['#ff4d4d','#ff4d4d','#ff4d4d','#ff4d4d',
+  '#00d4c8','#00d4c8','#00d4c8','#00d4c8',
+  '#ffd600','#ffd600','#ffd600','#ffd600',
+  '#a855f7','#a855f7','#a855f7','#a855f7'];
+
+const AGENTS = [
+  {name:'Atlas',type:'S01 稳定币收益',risk:'con',genes:[.1,.05,.3,.05,.2,.1,1,.3,.3,.1,.1,.9,.2,.1,.3,.1]},
+  {name:'Satoshi',type:'S02 BTC DCA',risk:'con',genes:[.2,.15,.4,.1,.3,.2,1,.2,1,.05,.05,.1,.3,.1,.2,.1]},
+  {name:'Oracle',type:'S03 预测 Alpha',risk:'bal',genes:[.4,.3,.5,.2,.4,.3,.6,.4,.3,.9,.1,.2,.2,.4,.3,.8]},
+  {name:'Mercury',type:'S04 跨 DEX 套利',risk:'agg',genes:[.3,.2,.6,.3,.2,.1,.05,.9,.6,.1,.1,.5,.5,.1,.2,.1]},
+  {name:'Catalyst',type:'S05 宏观事件',risk:'agg',genes:[.6,.4,.5,.4,.5,.8,.4,.5,.3,.4,.3,.1,.2,.3,.4,.95]},
+  {name:'Midas',type:'S06 黄金动量',risk:'bal',genes:[.4,.35,.5,.3,.7,.4,.6,.3,.1,.05,.9,.05,.5,.2,.3,.3]},
+  {name:'Titan',type:'S07 杠杆动量',risk:'agg',genes:[.7,.5,.7,.9,.85,.6,.3,.3,.7,.1,.1,.1,.7,.2,.1,.2]},
+  {name:'Chaos',type:'S08 Degen 山寨',risk:'deg',genes:[.95,.8,.8,.7,.6,.95,.1,.2,.9,.1,.05,.3,.4,.7,.1,.3]},
+  {name:'Basis',type:'S09 期货基差',risk:'con',genes:[.15,.1,.4,.2,.2,.15,.5,.95,.4,.1,.2,.2,.6,.1,.4,.1]},
+  {name:'Petro',type:'S10 能源交易',risk:'bal',genes:[.5,.4,.5,.3,.5,.5,.6,.4,.1,.05,.85,.1,.3,.2,.8,.4]},
+  {name:'Quant',type:'S11 多因子量化',risk:'bal',genes:[.35,.3,.5,.3,.6,.4,.5,.8,.5,.2,.2,.2,.9,.3,.4,.3]},
+  {name:'Farmer',type:'S12 DeFi 挖矿',risk:'bal',genes:[.4,.3,.5,.2,.3,.2,.7,.3,.3,.1,.05,.95,.2,.1,.3,.1]},
+  {name:'Senator',type:'S13 选举 Alpha',risk:'bal',genes:[.45,.35,.5,.2,.4,.3,.5,.4,.2,.8,.05,.1,.1,.5,.3,.9]},
+  {name:'Maker',type:'S14 做市商',risk:'bal',genes:[.3,.2,.6,.2,.15,.3,.05,.5,.5,.1,.1,.3,.6,.1,.3,.1]},
+  {name:'Narrator',type:'S15 AI 叙事',risk:'agg',genes:[.6,.4,.5,.4,.7,.6,.3,.3,.7,.2,.05,.2,.3,.9,.1,.4]},
+  {name:'Shield',type:'S16 对冲组合',risk:'con',genes:[.2,.1,.4,.15,.3,.2,.7,.9,.4,.2,.2,.3,.5,.2,.5,.3]}
+];
+
+// ===== Radar Chart Drawing =====
+function drawRadar(ctx,w,h,genes,fillColor,strokeColor,label){
+  const cx=w/2,cy=h/2,r=Math.min(cx,cy)*.78;
+  const n=genes.length;
+  ctx.clearRect(0,0,w,h);
+
+  // Grid rings
+  for(let ring=1;ring<=4;ring++){
+    ctx.beginPath();
+    const rr=r*ring/4;
+    for(let i=0;i<=n;i++){
+      const a=Math.PI*2*i/n-Math.PI/2;
+      const x=cx+Math.cos(a)*rr,y=cy+Math.sin(a)*rr;
+      i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+    }
+    ctx.strokeStyle='rgba(255,255,255,.06)';ctx.lineWidth=1;ctx.stroke();
+  }
+  // Axes
+  for(let i=0;i<n;i++){
+    const a=Math.PI*2*i/n-Math.PI/2;
+    ctx.beginPath();ctx.moveTo(cx,cy);
+    ctx.lineTo(cx+Math.cos(a)*r,cy+Math.sin(a)*r);
+    ctx.strokeStyle='rgba(255,255,255,.04)';ctx.stroke();
+  }
+  // Data polygon
+  ctx.beginPath();
+  for(let i=0;i<=n;i++){
+    const idx=i%n;
+    const a=Math.PI*2*idx/n-Math.PI/2;
+    const v=genes[idx]*r;
+    const x=cx+Math.cos(a)*v,y=cy+Math.sin(a)*v;
+    i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+  }
+  ctx.fillStyle=fillColor||'rgba(0,212,200,.15)';ctx.fill();
+  ctx.strokeStyle=strokeColor||'rgba(0,212,200,.7)';ctx.lineWidth=2;ctx.stroke();
+  // Data points with chromosome colors
+  for(let i=0;i<n;i++){
+    const a=Math.PI*2*i/n-Math.PI/2;
+    const v=genes[i]*r;
+    const x=cx+Math.cos(a)*v,y=cy+Math.sin(a)*v;
+    ctx.beginPath();ctx.arc(x,y,3,0,Math.PI*2);
+    ctx.fillStyle=CHROMO_COLORS[i];ctx.fill();
+  }
+  // Labels (only for large charts)
+  if(w>=250){
+    ctx.font='500 9px Inter,sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+    for(let i=0;i<n;i++){
+      const a=Math.PI*2*i/n-Math.PI/2;
+      const lx=cx+Math.cos(a)*(r+18),ly=cy+Math.sin(a)*(r+18);
+      ctx.fillStyle=CHROMO_COLORS[i];
+      ctx.fillText(GENE_LABELS[i].replace('_',' '),lx,ly);
+    }
+  }
+}
+
+// ===== DNA Canvas Animation =====
+(function(){
+  const c=document.getElementById('dnaCanvas'),ctx=c.getContext('2d');
+  let W,H;
+  function resize(){W=c.width=window.innerWidth;H=c.height=window.innerHeight}
+  resize();window.addEventListener('resize',resize);
+  let t=0;
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    const cx=W*.82,amp=40,pairs=30,spacing=H/pairs;
+    for(let i=0;i<pairs;i++){
+      const y=i*spacing;
+      const phase=t*.015+i*.25;
+      const x1=cx+Math.sin(phase)*amp;
+      const x2=cx-Math.sin(phase)*amp;
+      // Helix strands
+      ctx.beginPath();ctx.arc(x1,y,2.5,0,Math.PI*2);
+      ctx.fillStyle=`rgba(0,212,200,${.3+Math.sin(phase)*.2})`;ctx.fill();
+      ctx.beginPath();ctx.arc(x2,y,2.5,0,Math.PI*2);
+      ctx.fillStyle=`rgba(168,85,247,${.3-Math.sin(phase)*.2})`;ctx.fill();
+      // Base pair connector
+      if(i%2===0){
+        ctx.beginPath();ctx.moveTo(x1,y);ctx.lineTo(x2,y);
+        ctx.strokeStyle=`rgba(255,255,255,${.04+Math.abs(Math.sin(phase))*.04})`;
+        ctx.lineWidth=1;ctx.stroke();
+      }
+    }
+    t++;requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+// ===== Hero Radar Demo =====
+(function(){
+  const c=document.getElementById('radarDemo'),ctx=c.getContext('2d');
+  let phase=0;
+  function animate(){
+    const genes=AGENTS[0].genes.map((v,i)=>v+Math.sin(phase+i*.4)*.08);
+    drawRadar(ctx,300,300,genes);
+    phase+=.02;requestAnimationFrame(animate);
+  }
+  animate();
+})();
+
+// ===== Agent Gallery =====
+(function(){
+  const g=document.getElementById('agentGallery');
+  AGENTS.forEach((a,idx)=>{
+    const div=document.createElement('div');
+    div.className='ag';
+    div.onclick=()=>openModal(idx);
+    div.innerHTML=`<canvas class="ag-mini-radar" width="80" height="80" data-idx="${idx}"></canvas>
+      <div class="ag-name">${a.name}</div>
+      <div class="ag-type">${a.type}</div>
+      <span class="ag-risk ${a.risk}">${{con:'Conservative',bal:'Balanced',agg:'Aggressive',deg:'DEGEN'}[a.risk]}</span>`;
+    g.appendChild(div);
+  });
+  // Draw mini radars
+  document.querySelectorAll('.ag-mini-radar').forEach(c=>{
+    const idx=+c.dataset.idx;
+    drawRadar(c.getContext('2d'),80,80,AGENTS[idx].genes,'rgba(0,212,200,.12)','rgba(0,212,200,.5)');
+  });
+})();
+
+// ===== Agent Modal =====
+function openModal(idx){
+  const a=AGENTS[idx];
+  document.getElementById('modalName').textContent=a.name;
+  document.getElementById('modalType').textContent=a.type;
+  const mc=document.getElementById('modalRadar');
+  drawRadar(mc.getContext('2d'),140,140,a.genes);
+  const gd=document.getElementById('modalGenes');
+  gd.innerHTML=GENE_LABELS.map((l,i)=>
+    `<div class="modal-gene"><span>${l}</span><span>${a.genes[i].toFixed(2)}</span></div>`
+  ).join('');
+  document.getElementById('agentModal').classList.add('show');
+  document.body.style.overflow='hidden';
+}
+function closeModal(){
+  document.getElementById('agentModal').classList.remove('show');
+  document.body.style.overflow='';
+}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});
+
+// ===== Breeding =====
+let parents=[0,7]; // Atlas, Chaos
+function selectParent(el,slot){
+  // cycle through agents
+  parents[slot]=(parents[slot]+1)%AGENTS.length;
+  const a=AGENTS[parents[slot]];
+  el.querySelector('.breed-agent-name').textContent=a.name;
+  el.querySelector('.breed-agent-type').textContent=a.type;
+  const c=el.querySelector('.breed-radar');
+  if(c)drawRadar(c.getContext('2d'),80,80,a.genes,'rgba(0,212,200,.12)','rgba(0,212,200,.5)');
+}
+function breedAgents(){
+  const p1=AGENTS[parents[0]].genes;
+  const p2=AGENTS[parents[1]].genes;
+  const child=[];
+  const names=['Neo','Flux','Echo','Nova','Zion','Apex','Vex','Pixel','Drift','Spark'];
+  for(let c=0;c<4;c++){
+    const r=Math.random();
+    for(let g=0;g<4;g++){
+      const i=c*4+g;
+      let val;
+      if(r<.25)val=p1[i];
+      else if(r<.5)val=p2[i];
+      else val=(p1[i]+p2[i])/2+(.5-Math.random())*.1;
+      // mutation
+      if(Math.random()<.08)val+=(.5-Math.random())*.3;
+      if(Math.random()<.005)val=Math.random(); // legendary
+      child.push(Math.max(0,Math.min(1,val)));
+    }
+  }
+  const rc=document.getElementById('offspringRadar');
+  drawRadar(rc.getContext('2d'),100,100,child,'rgba(168,85,247,.15)','rgba(168,85,247,.7)');
+  document.getElementById('offspringName').textContent=names[Math.floor(Math.random()*names.length)];
+  document.getElementById('breedResult').classList.add('active');
+}
+// Init breed radars
+document.querySelectorAll('.breed-radar').forEach((c,i)=>{
+  drawRadar(c.getContext('2d'),80,80,AGENTS[parents[i]].genes,'rgba(0,212,200,.12)','rgba(0,212,200,.5)');
+});
+
+// ===== Opportunity Feed =====
+const OPP_DATA = [
+  {icon:'🔮',title:'Polymarket vs Kalshi 套利',desc:'Trump 当选: Poly 62¢ / Kalshi 58¢ → 4¢ 价差',ret:'+6.4%',conf:'high',time:'2h'},
+  {icon:'📈',title:'ETH/BTC 价差扩大',desc:'DEX 价差 0.32% → 跨所搬砖机会',ret:'+0.32%',conf:'high',time:'15m'},
+  {icon:'💰',title:'Aave V3 USDC 收益飙升',desc:'APY 从 4% → 12%，大额资金涌入前窗口',ret:'+12% APY',conf:'mid',time:'6h'},
+  {icon:'📊',title:'BTC 资金费率极值',desc:'费率 0.08% → 做空吃费率套利',ret:'+0.24%/d',conf:'high',time:'8h'},
+  {icon:'🗓',title:'FOMC 利率决议',desc:'降息 25bp 概率 78% → 做多风险资产',ret:'+5-15%',conf:'mid',time:'3d'},
+  {icon:'🐋',title:'巨鲸钱包异动',desc:'0x7a3...累计买入 $2.3M ETH，持续 3 天',ret:'跟随',conf:'mid',time:'24h'},
+  {icon:'🪂',title:'LayerZero 空投快照',desc:'跨链交互达标 → 预估空投 $800-2K',ret:'$800+',conf:'low',time:'7d'},
+  {icon:'⛽',title:'WTI 原油回调信号',desc:'RSI 超卖 + 库存数据利多 → 做多原油',ret:'+3.2%',conf:'mid',time:'2d'},
+  {icon:'🤖',title:'AI 叙事升温',desc:'NVIDIA 财报超预期 → AI 代币板块联动',ret:'+8-20%',conf:'mid',time:'12h'},
+];
+(function(){
+  const feed=document.getElementById('oppFeed');
+  OPP_DATA.forEach(o=>{
+    const div=document.createElement('div');
+    div.className='opp';
+    div.innerHTML=`<div class="opp-icon">${o.icon}</div>
+      <div class="opp-info">
+        <div class="opp-title">${o.title}</div>
+        <div class="opp-desc">${o.desc}</div>
+        <div class="opp-meta">
+          <span class="opp-tag ${o.conf}">${{high:'高置信',mid:'中置信',low:'低置信'}[o.conf]}</span>
+          <span class="opp-tag time">${o.time} 窗口</span>
+        </div>
+      </div>
+      <div class="opp-return">${o.ret}</div>`;
+    feed.appendChild(div);
+  });
+})();
+
+// ===== Intent Demo =====
+function runIntent(){
+  const resp=document.getElementById('intentResponse');
+  const input=document.getElementById('intentInput').value||'我有 500U，想日赚 50U，中等风险';
+  resp.innerHTML='<span class="typing">Agent 正在分析...</span>';
+  setTimeout(()=>{
+    resp.innerHTML=`<div style="color:var(--t1);font-weight:600;margin-bottom:8px">🧠 Agent 策略方案</div>
+<div style="color:var(--t2);margin-bottom:6px">目标: <span style="color:var(--green)">日赚 50U (10% ROI)</span> | 本金: 500U | 风险: 中等</div>
+<div class="alloc-bar">
+  <div class="alloc-seg" style="width:40%;background:#a855f7"></div>
+  <div class="alloc-seg" style="width:30%;background:#00d4c8"></div>
+  <div class="alloc-seg" style="width:20%;background:#ffd600"></div>
+  <div class="alloc-seg" style="width:10%;background:rgba(255,255,255,.15)"></div>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px">
+  <div style="padding:8px;background:rgba(168,85,247,.08);border-radius:6px;font-size:.78rem">
+    <span style="color:var(--purple)">40%</span> 预测市场<br>
+    <span style="color:var(--t3)">3 个高 EV 事件，预期 +8%</span>
+  </div>
+  <div style="padding:8px;background:rgba(0,212,200,.08);border-radius:6px;font-size:.78rem">
+    <span style="color:var(--cyan)">30%</span> 永续合约<br>
+    <span style="color:var(--t3)">ETH 趋势跟踪 5x，预期 +12%</span>
+  </div>
+  <div style="padding:8px;background:rgba(255,214,0,.08);border-radius:6px;font-size:.78rem">
+    <span style="color:var(--gold)">20%</span> DeFi 收益<br>
+    <span style="color:var(--t3)">稳定币池 APY 12%</span>
+  </div>
+  <div style="padding:8px;background:rgba(255,255,255,.03);border-radius:6px;font-size:.78rem">
+    <span style="color:var(--t2)">10%</span> 预留<br>
+    <span style="color:var(--t3)">机会捕捉 + 风控缓冲</span>
+  </div>
+</div>
+<div style="margin-top:10px;font-size:.78rem;color:var(--t3)">预期综合日收益: <span style="color:var(--green);font-weight:600">+$48~62</span> | 最大回撤: -15% | 置信度: 72%</div>`;
+  },1500);
+}
+
+// ===== FAQ =====
+function tFaq(el){
+  const f=el.parentElement,a=f.querySelector('.fq-a'),on=f.classList.contains('active');
+  document.querySelectorAll('.fq').forEach(i=>{i.classList.remove('active');i.querySelector('.fq-a').style.maxHeight='0'});
+  if(!on){f.classList.add('active');a.style.maxHeight=a.scrollHeight+'px'}
+}
+
+// ===== Scroll Animations =====
+const obs=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible')})},{threshold:.08,rootMargin:'0px 0px -30px 0px'});
+document.querySelectorAll('.fi').forEach(el=>obs.observe(el));
+</script>
+</body>
+</html>
