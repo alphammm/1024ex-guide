@@ -3,1189 +3,436 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>当 AI Agent 遇上预测市场 — 1024EX</title>
+  <title>AI Agent × 预测市场 — 1024EX</title>
   <style>
     :root {
       --bg: #06070E;
-      --bg2: #0C0D1A;
       --card: #101228;
-      --card-hover: #161940;
       --border: #1C1E44;
       --text: #EAEAF4;
       --dim: #6E6F94;
       --green: #00E676;
       --green-bg: rgba(0,230,118,0.07);
-      --green-border: rgba(0,230,118,0.2);
+      --green-bd: rgba(0,230,118,0.2);
       --cyan: #00CEC9;
-      --purple: #6C5CE7;
-      --purple-light: #A29BFE;
       --orange: #FF9F43;
       --orange-bg: rgba(255,159,67,0.07);
-      --orange-border: rgba(255,159,67,0.2);
-      --red: #FF5252;
-      --yellow: #FFD600;
+      --orange-bd: rgba(255,159,67,0.2);
+      --purple: #A29BFE;
     }
-
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-
+    * { margin:0; padding:0; box-sizing:border-box; }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Noto Sans SC', 'Helvetica Neue', sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      line-height: 1.8;
-      overflow-x: hidden;
+      font-family: -apple-system, 'PingFang SC', 'Noto Sans SC', sans-serif;
+      background: var(--bg); color: var(--text);
+      line-height: 1.8; overflow-x: hidden;
     }
 
-    /* ===== Typography ===== */
-    .mono { font-family: 'SF Mono', 'JetBrains Mono', 'Fira Code', monospace; }
+    /* ===== Layout ===== */
+    .wrap { max-width: 760px; margin: 0 auto; padding: 0 1.5rem; }
+    .spacer { height: 80px; }
+    .spacer-sm { height: 48px; }
+    .divider { height: 1px; background: linear-gradient(90deg, transparent, var(--border), transparent); margin: 0 auto; max-width: 400px; }
 
-    /* ===== Hero ===== */
+    /* ===== Hero — Compact ===== */
     .hero {
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      padding: 120px 1.5rem 80px;
       text-align: center;
-      padding: 2rem;
       position: relative;
-      overflow: hidden;
     }
-
-    .hero-bg {
-      position: absolute;
-      inset: 0;
-      background:
-        radial-gradient(ellipse 80% 60% at 30% 30%, rgba(0,230,118,0.05) 0%, transparent 70%),
-        radial-gradient(ellipse 60% 80% at 70% 70%, rgba(255,159,67,0.05) 0%, transparent 70%),
-        radial-gradient(ellipse 50% 50% at 50% 50%, rgba(108,92,231,0.06) 0%, transparent 60%);
+    .hero::before {
+      content:''; position:absolute; inset:0;
+      background: radial-gradient(ellipse at 50% 0%, rgba(0,230,118,0.04) 0%, transparent 60%);
     }
-
-    .hero-grid {
-      position: absolute;
-      inset: 0;
-      background-image:
-        linear-gradient(rgba(0,230,118,0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0,230,118,0.03) 1px, transparent 1px);
-      background-size: 60px 60px;
-      mask-image: radial-gradient(ellipse at center, black 30%, transparent 70%);
-      -webkit-mask-image: radial-gradient(ellipse at center, black 30%, transparent 70%);
+    .hero-content { position: relative; max-width: 700px; margin: 0 auto; }
+    .kicker {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 5px 16px; border-radius: 100px;
+      background: var(--green-bg); border: 1px solid var(--green-bd);
+      font-size: 0.75rem; color: var(--green); letter-spacing: 0.5px;
+      margin-bottom: 1.5rem;
     }
-
-    .hero-content {
-      position: relative;
-      z-index: 1;
-      max-width: 900px;
-    }
-
-    .hero-kicker {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 6px 20px;
-      background: var(--green-bg);
-      border: 1px solid var(--green-border);
-      border-radius: 100px;
-      font-size: 0.8rem;
-      color: var(--green);
-      margin-bottom: 2rem;
-      letter-spacing: 0.5px;
-    }
-
-    .hero-kicker .dot {
-      width: 7px; height: 7px;
-      background: var(--green);
-      border-radius: 50%;
+    .kicker .dot {
+      width:6px; height:6px; background:var(--green); border-radius:50%;
       animation: blink 2s infinite;
     }
-
-    @keyframes blink {
-      0%,100% { opacity: 1; }
-      50% { opacity: 0.3; }
-    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
 
     .hero h1 {
-      font-size: clamp(2.4rem, 5.5vw, 4.2rem);
-      font-weight: 800;
-      line-height: 1.2;
-      margin-bottom: 1.5rem;
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: 800; line-height: 1.25; margin-bottom: 1.2rem;
     }
-
-    .hero h1 .line1 { color: var(--text); }
-
-    .hero h1 .line2 {
-      background: linear-gradient(135deg, var(--green) 0%, var(--cyan) 40%, var(--orange) 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
+    .hero h1 .grad {
+      background: linear-gradient(135deg, var(--green), var(--cyan), var(--orange));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
     }
+    .hero p { color: var(--dim); font-size: 1.05rem; max-width: 560px; margin: 0 auto 2rem; }
+    .hero p strong { color: var(--text); }
 
-    .hero-sub {
-      font-size: 1.2rem;
-      color: var(--dim);
-      max-width: 680px;
-      margin: 0 auto 2.5rem;
-      line-height: 1.9;
+    .stats {
+      display: flex; justify-content: center; gap: 2.5rem; flex-wrap: wrap;
     }
+    .stat-num { font-size: 1.8rem; font-weight: 800; display: block; }
+    .stat-num.g { color: var(--green); }
+    .stat-num.o { color: var(--orange); }
+    .stat-num.p { color: var(--purple); }
+    .stat-label { font-size: 0.75rem; color: var(--dim); }
 
-    .hero-sub strong { color: var(--text); }
-
-    .hero-stats {
-      display: flex;
-      justify-content: center;
-      gap: 3rem;
-      flex-wrap: wrap;
-      margin-bottom: 3rem;
+    /* ===== Section Titles ===== */
+    .sec-title {
+      text-align: center; margin-bottom: 2rem;
     }
-
-    .hero-stat {
-      text-align: center;
+    .tag {
+      display: inline-block; padding: 3px 12px; border-radius: 100px;
+      font-size: 0.7rem; font-weight: 700; letter-spacing: 1px; margin-bottom: 0.7rem;
     }
-
-    .hero-stat .num {
-      font-size: 2.2rem;
-      font-weight: 800;
-      display: block;
-    }
-
-    .hero-stat .num.green { color: var(--green); }
-    .hero-stat .num.orange { color: var(--orange); }
-    .hero-stat .num.purple { color: var(--purple-light); }
-
-    .hero-stat .label {
-      font-size: 0.8rem;
-      color: var(--dim);
-      margin-top: 4px;
-    }
-
-    .hero-cta {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      padding: 16px 40px;
-      background: linear-gradient(135deg, var(--green), var(--cyan));
-      color: var(--bg);
-      text-decoration: none;
-      border-radius: 14px;
-      font-size: 1.05rem;
-      font-weight: 700;
-      transition: all 0.3s;
-      border: none;
-      cursor: pointer;
-    }
-
-    .hero-cta:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 40px rgba(0,230,118,0.3);
-    }
-
-    /* ===== Section ===== */
-    .sec {
-      padding: 100px 2rem;
-      max-width: 1100px;
-      margin: 0 auto;
-    }
-
-    .sec-sm { max-width: 860px; }
-
-    .sec-header {
-      text-align: center;
-      margin-bottom: 4rem;
-    }
-
-    .sec-tag {
-      display: inline-block;
-      padding: 4px 14px;
-      border-radius: 100px;
-      font-size: 0.72rem;
-      font-weight: 700;
-      letter-spacing: 1px;
-      margin-bottom: 1rem;
-    }
-
-    .sec-tag.g { background: var(--green-bg); color: var(--green); border: 1px solid var(--green-border); }
-    .sec-tag.o { background: var(--orange-bg); color: var(--orange); border: 1px solid var(--orange-border); }
-    .sec-tag.p { background: rgba(108,92,231,0.08); color: var(--purple-light); border: 1px solid rgba(108,92,231,0.2); }
-
-    .sec-header h2 {
-      font-size: 2.2rem;
-      font-weight: 800;
-      margin-bottom: 0.7rem;
-    }
-
-    .sec-header p {
-      color: var(--dim);
-      font-size: 1.05rem;
-      max-width: 600px;
-      margin: 0 auto;
-    }
-
-    .divider {
-      height: 1px;
-      background: linear-gradient(90deg, transparent, var(--border), transparent);
-      max-width: 700px;
-      margin: 0 auto;
-    }
-
-    /* ===== Narrative Block ===== */
-    .narrative {
-      max-width: 720px;
-      margin: 0 auto;
-      padding: 60px 2rem;
-    }
-
-    .narrative h2 {
-      font-size: 1.8rem;
-      margin-bottom: 1.5rem;
-      line-height: 1.4;
-    }
-
-    .narrative p {
-      color: var(--dim);
-      font-size: 1.05rem;
-      margin-bottom: 1.5rem;
-    }
-
-    .narrative p strong { color: var(--text); }
-
-    .narrative .highlight-box {
-      background: var(--card);
-      border-left: 3px solid var(--green);
-      padding: 1.2rem 1.5rem;
-      border-radius: 0 12px 12px 0;
-      margin: 2rem 0;
-      font-size: 1.05rem;
-      color: var(--text);
-    }
-
-    .narrative .highlight-box.orange { border-left-color: var(--orange); }
+    .tag.g { background: var(--green-bg); color: var(--green); border: 1px solid var(--green-bd); }
+    .tag.o { background: var(--orange-bg); color: var(--orange); border: 1px solid var(--orange-bd); }
+    .tag.p { background: rgba(108,92,231,0.08); color: var(--purple); border: 1px solid rgba(108,92,231,0.2); }
+    .sec-title h2 { font-size: 1.6rem; font-weight: 800; }
 
     /* ===== Two Trends ===== */
-    .trends {
-      display: grid;
-      grid-template-columns: 1fr 80px 1fr;
-      gap: 0;
-      align-items: center;
+    .two-col {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;
     }
-
-    .trend-card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 2.5rem 2rem;
-      transition: all 0.3s;
-      height: 100%;
+    .trend {
+      background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+      padding: 1.8rem; transition: all 0.3s;
     }
-
-    .trend-card:hover {
-      transform: translateY(-4px);
+    .trend:hover { transform: translateY(-3px); }
+    .trend.agent { border-color: var(--green-bd); }
+    .trend.predict { border-color: var(--orange-bd); }
+    .trend h3 { font-size: 1.15rem; margin-bottom: 0.3rem; }
+    .trend h3.g { color: var(--green); }
+    .trend h3.o { color: var(--orange); }
+    .trend .sub { font-size: 0.78rem; color: var(--dim); margin-bottom: 1rem; }
+    .trend ul { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; }
+    .trend ul li {
+      font-size: 0.88rem; color: var(--dim);
+      padding-left: 16px; position: relative;
     }
-
-    .trend-card.agent { border-color: var(--green-border); }
-    .trend-card.agent:hover { box-shadow: 0 8px 40px rgba(0,230,118,0.08); }
-    .trend-card.predict { border-color: var(--orange-border); }
-    .trend-card.predict:hover { box-shadow: 0 8px 40px rgba(255,159,67,0.08); }
-
-    .trend-icon {
-      font-size: 3rem;
-      margin-bottom: 1.2rem;
-      display: block;
+    .trend ul li::before {
+      content: '>'; position: absolute; left: 0;
+      font-weight: 700; font-family: monospace;
     }
+    .trend.agent ul li::before { color: var(--green); }
+    .trend.predict ul li::before { color: var(--orange); }
+    .trend ul li strong { color: var(--text); }
 
-    .trend-card h3 {
-      font-size: 1.4rem;
-      margin-bottom: 0.5rem;
+    .cross-label {
+      text-align: center; padding: 1.5rem 0; font-size: 0.8rem; color: var(--dim);
     }
+    .cross-label span { font-size: 1.2rem; color: var(--purple); font-weight: 800; }
 
-    .trend-card .trend-sub {
-      font-size: 0.85rem;
-      color: var(--dim);
-      margin-bottom: 1.5rem;
+    /* ===== Callout ===== */
+    .callout {
+      background: var(--card); border-left: 3px solid var(--green);
+      border-radius: 0 12px 12px 0; padding: 1.2rem 1.5rem;
+      font-size: 1rem; color: var(--text);
     }
+    .callout.orange { border-left-color: var(--orange); }
 
-    .trend-points {
-      list-style: none;
-      display: flex;
-      flex-direction: column;
-      gap: 0.7rem;
+    /* ===== VS Rows ===== */
+    .vs-list { display: flex; flex-direction: column; gap: 0.8rem; }
+    .vs-row {
+      display: grid; grid-template-columns: 1fr 40px 1fr; align-items: center;
+      background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+      padding: 1rem 1.2rem; transition: all 0.3s; gap: 0;
     }
+    .vs-row:hover { border-color: var(--green-bd); transform: translateX(3px); }
+    .vs-human { text-align: right; font-size: 0.88rem; color: var(--dim); }
+    .vs-mid { text-align: center; font-size: 0.7rem; color: var(--purple); font-weight: 700; }
+    .vs-ai { font-size: 0.88rem; color: var(--green); font-weight: 600; }
 
-    .trend-points li {
-      display: flex;
-      align-items: flex-start;
-      gap: 8px;
-      font-size: 0.92rem;
-      color: var(--dim);
-    }
-
-    .trend-points li::before {
-      content: '>';
-      color: var(--green);
-      font-weight: 700;
-      min-width: 14px;
-      font-family: 'SF Mono', monospace;
-    }
-
-    .trend-card.predict .trend-points li::before { color: var(--orange); }
-
-    .trend-cross {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      font-size: 2.4rem;
-      font-weight: 800;
-      color: var(--purple-light);
-      text-align: center;
-    }
-
-    .trend-cross span {
-      font-size: 0.7rem;
-      color: var(--dim);
-      margin-top: 6px;
-      letter-spacing: 1px;
-    }
-
-    /* ===== Why Perfect Match ===== */
-    .match-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 1.2rem;
-    }
-
-    .match-card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 2rem;
-      transition: all 0.3s;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .match-card::after {
-      content: '';
-      position: absolute;
-      bottom: 0; left: 0; right: 0;
-      height: 2px;
-      background: linear-gradient(90deg, var(--green), var(--orange));
-      opacity: 0;
-      transition: opacity 0.3s;
-    }
-
-    .match-card:hover { transform: translateY(-3px); }
-    .match-card:hover::after { opacity: 1; }
-
-    .match-vs {
-      display: grid;
-      grid-template-columns: 1fr auto 1fr;
-      gap: 8px;
-      align-items: center;
-      margin-bottom: 1rem;
-      font-size: 0.82rem;
-      font-weight: 700;
-    }
-
-    .match-vs .human { color: var(--dim); text-align: right; }
-    .match-vs .vs { color: var(--purple-light); font-size: 0.7rem; }
-    .match-vs .ai { color: var(--green); }
-
-    .match-card h3 {
-      font-size: 1.1rem;
-      margin-bottom: 0.5rem;
-    }
-
-    .match-card p {
-      font-size: 0.9rem;
-      color: var(--dim);
-    }
-
-    /* ===== Scenario Cards ===== */
-    .scenario-list {
-      display: flex;
-      flex-direction: column;
-      gap: 1.5rem;
-    }
-
+    /* ===== Scenario — Compact ===== */
     .scenario {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      overflow: hidden;
-      transition: all 0.3s;
+      background: var(--card); border: 1px solid var(--border); border-radius: 14px;
+      padding: 1.5rem; margin-bottom: 1rem; transition: all 0.3s;
     }
-
-    .scenario:hover {
-      border-color: var(--green-border);
-      transform: translateX(4px);
+    .scenario:hover { border-color: var(--green-bd); }
+    .scenario h4 { font-size: 0.95rem; margin-bottom: 0.4rem; }
+    .scenario h4 .emoji { margin-right: 6px; }
+    .scenario .market { font-size: 0.78rem; color: var(--orange); margin-bottom: 0.8rem; }
+    .scenario .result {
+      font-size: 0.85rem; color: var(--dim);
+      padding-top: 0.8rem; border-top: 1px solid var(--border);
+      margin-top: 0.8rem;
     }
+    .scenario .result b { color: var(--green); }
 
-    .scenario-top {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      padding: 1.5rem 2rem;
+    /* ===== Why 1024EX — Compact ===== */
+    .features {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem;
     }
-
-    .scenario-emoji {
-      font-size: 2rem;
-      min-width: 48px;
-      text-align: center;
+    .feat {
+      background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+      padding: 1.2rem; transition: all 0.3s;
     }
+    .feat:hover { border-color: var(--cyan); transform: translateY(-2px); }
+    .feat h4 { font-size: 0.92rem; margin-bottom: 0.3rem; }
+    .feat h4 .icon { margin-right: 6px; }
+    .feat p { font-size: 0.82rem; color: var(--dim); }
 
-    .scenario-meta h3 {
-      font-size: 1.05rem;
-      margin-bottom: 2px;
+    /* ===== 3 Ways ===== */
+    .ways { display: flex; flex-direction: column; gap: 0.8rem; }
+    .way {
+      display: flex; gap: 1rem; align-items: flex-start;
+      background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+      padding: 1.2rem; transition: all 0.3s;
     }
-
-    .scenario-meta .type {
-      font-size: 0.78rem;
-      color: var(--orange);
+    .way:hover { border-color: var(--green-bd); }
+    .way-icon {
+      width: 40px; height: 40px; min-width: 40px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center; font-size: 1.2rem;
     }
+    .way-icon.g { background: var(--green-bg); }
+    .way-icon.o { background: var(--orange-bg); }
+    .way-icon.p { background: rgba(108,92,231,0.08); }
+    .way h4 { font-size: 0.92rem; margin-bottom: 2px; }
+    .way p { font-size: 0.82rem; color: var(--dim); }
 
-    .scenario-body {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      border-top: 1px solid var(--border);
+    /* ===== Risk ===== */
+    .risk {
+      background: var(--orange-bg); border: 1px solid var(--orange-bd);
+      border-radius: 14px; padding: 1.5rem;
     }
-
-    .scenario-col {
-      padding: 1.2rem 2rem;
-    }
-
-    .scenario-col:first-child {
-      border-right: 1px solid var(--border);
-    }
-
-    .scenario-col h4 {
-      font-size: 0.75rem;
-      color: var(--dim);
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 0.6rem;
-    }
-
-    .scenario-col.human h4 { color: var(--dim); }
-    .scenario-col.agent h4 { color: var(--green); }
-
-    .scenario-col p {
-      font-size: 0.88rem;
-      color: var(--dim);
-    }
-
-    .scenario-col.agent p { color: var(--text); }
-
-    .scenario-result {
-      padding: 1rem 2rem;
-      background: rgba(0,230,118,0.04);
-      border-top: 1px solid var(--border);
-      font-size: 0.85rem;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .scenario-result .tag {
-      padding: 2px 8px;
-      background: var(--green-bg);
-      color: var(--green);
-      border-radius: 4px;
-      font-size: 0.75rem;
-      font-weight: 700;
-    }
-
-    .scenario-result span { color: var(--dim); }
-
-    /* ===== Why 1024EX ===== */
-    .why-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 1.2rem;
-    }
-
-    .why-card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 2rem 1.5rem;
-      text-align: center;
-      transition: all 0.3s;
-    }
-
-    .why-card:hover {
-      border-color: var(--cyan);
-      transform: translateY(-3px);
-    }
-
-    .why-icon {
-      font-size: 2rem;
-      margin-bottom: 1rem;
-    }
-
-    .why-card h3 {
-      font-size: 1rem;
-      margin-bottom: 0.5rem;
-    }
-
-    .why-card p {
-      font-size: 0.85rem;
-      color: var(--dim);
-    }
-
-    /* ===== How It Works ===== */
-    .how-flow {
-      display: flex;
-      flex-direction: column;
-      gap: 0;
-      position: relative;
-      max-width: 680px;
-      margin: 0 auto;
-    }
-
-    .how-line {
-      position: absolute;
-      left: 31px;
-      top: 32px;
-      bottom: 32px;
-      width: 2px;
-      background: linear-gradient(to bottom, var(--green), var(--orange), var(--purple));
-      opacity: 0.3;
-    }
-
-    .how-step {
-      display: flex;
-      gap: 1.5rem;
-      padding: 1.5rem 0;
-      position: relative;
-      z-index: 1;
-    }
-
-    .how-num {
-      width: 64px;
-      height: 64px;
-      min-width: 64px;
-      border-radius: 16px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.5rem;
-    }
-
-    .how-num.g { background: var(--green-bg); border: 1px solid var(--green-border); }
-    .how-num.o { background: var(--orange-bg); border: 1px solid var(--orange-border); }
-    .how-num.p { background: rgba(108,92,231,0.08); border: 1px solid rgba(108,92,231,0.2); }
-
-    .how-text { padding-top: 6px; flex: 1; }
-
-    .how-text h3 {
-      font-size: 1.1rem;
-      margin-bottom: 0.3rem;
-    }
-
-    .how-text p {
-      font-size: 0.92rem;
-      color: var(--dim);
-    }
-
-    .how-tag {
-      display: inline-block;
-      padding: 3px 10px;
-      border-radius: 6px;
-      font-size: 0.75rem;
-      font-weight: 600;
-      margin-top: 6px;
-    }
-
-    .how-tag.g { background: var(--green-bg); color: var(--green); }
-    .how-tag.o { background: var(--orange-bg); color: var(--orange); }
-
-    /* ===== Quote ===== */
-    .big-quote {
-      text-align: center;
-      padding: 80px 2rem;
-      max-width: 800px;
-      margin: 0 auto;
-    }
-
-    .big-quote blockquote {
-      font-size: 1.6rem;
-      font-weight: 700;
-      line-height: 1.5;
-      margin-bottom: 1rem;
-      position: relative;
-    }
-
-    .big-quote blockquote::before {
-      content: '"';
-      font-size: 5rem;
-      position: absolute;
-      top: -2rem;
-      left: -1rem;
-      color: var(--green);
-      opacity: 0.2;
-      font-family: Georgia, serif;
-    }
-
-    .big-quote cite {
-      font-style: normal;
-      color: var(--dim);
-      font-size: 0.9rem;
-    }
+    .risk h3 { font-size: 1rem; color: var(--orange); margin-bottom: 0.6rem; }
+    .risk p { font-size: 0.88rem; color: var(--dim); }
+    .risk p strong { color: var(--text); }
 
     /* ===== CTA ===== */
-    .cta-final {
-      text-align: center;
-      padding: 80px 2rem 140px;
-      position: relative;
+    .cta {
+      text-align: center; padding: 60px 1.5rem 100px;
     }
-
-    .cta-final::before {
-      content: '';
-      position: absolute;
-      bottom: 0; left: 0; right: 0;
-      height: 300px;
-      background: radial-gradient(ellipse at 50% 100%, rgba(0,230,118,0.06) 0%, transparent 70%);
-    }
-
-    .cta-final h2 {
-      font-size: 2.2rem;
-      font-weight: 800;
-      margin-bottom: 1rem;
-      position: relative;
-    }
-
-    .cta-final p {
-      color: var(--dim);
-      font-size: 1.05rem;
-      margin-bottom: 2.5rem;
-      position: relative;
-    }
-
-    .cta-btns {
-      display: flex;
-      gap: 1rem;
-      justify-content: center;
-      flex-wrap: wrap;
-      position: relative;
-    }
-
+    .cta h2 { font-size: 1.5rem; font-weight: 800; margin-bottom: 0.6rem; }
+    .cta p { color: var(--dim); margin-bottom: 1.5rem; }
+    .cta-btns { display: flex; gap: 0.8rem; justify-content: center; flex-wrap: wrap; }
     .btn {
-      padding: 14px 32px;
-      border-radius: 12px;
-      font-size: 1rem;
-      font-weight: 600;
-      text-decoration: none;
-      transition: all 0.3s;
-      cursor: pointer;
-      border: none;
+      padding: 12px 28px; border-radius: 10px; font-size: 0.95rem;
+      font-weight: 600; text-decoration: none; border: none; cursor: pointer; transition: all 0.3s;
     }
-
-    .btn-g {
-      background: linear-gradient(135deg, var(--green), var(--cyan));
-      color: var(--bg);
-    }
-
-    .btn-g:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 40px rgba(0,230,118,0.3);
-    }
-
-    .btn-o {
-      background: var(--orange-bg);
-      color: var(--orange);
-      border: 1px solid var(--orange-border);
-    }
-
-    .btn-o:hover {
-      background: rgba(255,159,67,0.15);
-      transform: translateY(-2px);
-    }
-
-    .btn-ghost {
-      background: transparent;
-      color: var(--text);
-      border: 1px solid var(--border);
-    }
-
-    .btn-ghost:hover {
-      border-color: var(--cyan);
-      color: var(--cyan);
-    }
+    .btn-g { background: linear-gradient(135deg, var(--green), var(--cyan)); color: var(--bg); }
+    .btn-g:hover { transform: translateY(-2px); box-shadow: 0 6px 28px rgba(0,230,118,0.3); }
+    .btn-ghost { background: transparent; color: var(--text); border: 1px solid var(--border); }
+    .btn-ghost:hover { border-color: var(--cyan); color: var(--cyan); }
 
     /* ===== Animations ===== */
-    .fade-up {
-      opacity: 0;
-      transform: translateY(28px);
-      transition: all 0.7s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    .fade-up.visible {
-      opacity: 1;
-      transform: translateY(0);
-    }
+    .fade { opacity:0; transform:translateY(20px); transition: all .6s cubic-bezier(.16,1,.3,1); }
+    .fade.visible { opacity:1; transform:translateY(0); }
 
     /* ===== Responsive ===== */
-    @media (max-width: 768px) {
-      .trends { grid-template-columns: 1fr; gap: 1rem; }
-      .trend-cross { transform: rotate(90deg); padding: 0.5rem; }
-      .why-grid { grid-template-columns: 1fr; }
-      .scenario-body { grid-template-columns: 1fr; }
-      .scenario-col:first-child { border-right: none; border-bottom: 1px solid var(--border); }
-      .hero-stats { gap: 2rem; }
+    @media (max-width: 640px) {
+      .two-col, .features { grid-template-columns: 1fr; }
+      .vs-row { grid-template-columns: 1fr; gap: 4px; text-align: left; }
+      .vs-human { text-align: left; }
+      .vs-mid { text-align: left; }
+      .stats { gap: 1.5rem; }
     }
   </style>
 </head>
 <body>
 
-<!-- ===== Hero ===== -->
+<!-- Hero -->
 <section class="hero">
-  <div class="hero-bg"></div>
-  <div class="hero-grid"></div>
   <div class="hero-content">
-    <div class="hero-kicker">
-      <span class="dot"></span>
-      2026 年两大风口交汇
+    <div class="kicker"><span class="dot"></span>2026 两大风口交汇</div>
+    <h1>AI Agent 开始<br><span class="grad">预测未来并下注</span></h1>
+    <p><strong>OpenClaw</strong> 让 AI 成为自主交易者，<strong>预测市场</strong>让所有人用钱投票未来。<strong>1024EX</strong> 是两者碰撞的原生平台。</p>
+    <div class="stats">
+      <div><span class="stat-num g">$115K</span><span class="stat-label">Agent 单周收益纪录</span></div>
+      <div><span class="stat-num o">100K+</span><span class="stat-label">OpenClaw GitHub Stars</span></div>
+      <div><span class="stat-num p">7 × 24</span><span class="stat-label">AI 不睡觉</span></div>
     </div>
-    <h1>
-      <span class="line1">当 AI Agent 开始</span><br>
-      <span class="line2">预测未来并下注</span>
-    </h1>
-    <p class="hero-sub">
-      <strong>OpenClaw</strong> 让 AI 成为自主交易者。<strong>预测市场</strong>让所有人用钱投票未来。<br>
-      两者碰撞，正在重新定义「谁来交易」和「交易什么」。<br>
-      <strong>1024EX</strong> 是为这个时代设计的原生平台。
-    </p>
-
-    <div class="hero-stats">
-      <div class="hero-stat">
-        <span class="num green">$115K</span>
-        <span class="label">OpenClaw 单周预测市场收益纪录</span>
-      </div>
-      <div class="hero-stat">
-        <span class="num orange">100K+</span>
-        <span class="label">OpenClaw GitHub Stars</span>
-      </div>
-      <div class="hero-stat">
-        <span class="num purple">7 × 24</span>
-        <span class="label">AI Agent 不休息</span>
-      </div>
-    </div>
-
-    <button class="hero-cta" onclick="document.getElementById('two-trends').scrollIntoView({behavior:'smooth'})">
-      了解这场变革 &darr;
-    </button>
   </div>
 </section>
 
-<!-- ===== Narrative: The Story ===== -->
-<div class="narrative fade-up">
-  <h2>一个 AI 在预测市场上<br>一周赚了 11.5 万美元</h2>
-  <p>
-    2026 年初，一个跑在 OpenClaw 框架上的 AI Agent，在 Polymarket 上创造了<strong>单周 $115,000 的收益纪录</strong>。它做的事情并不复杂 —— 实时监控全球新闻流、社交媒体情绪和链上预言机数据，在人类还在讨论"这个事件会不会发生"的时候，它已经完成了下注。
-  </p>
-  <p>
-    这不是偶然。这是两个正在爆发的趋势的必然交汇：<strong>AI Agent 自主行动的能力</strong>和<strong>预测市场的信息定价效率</strong>。
-  </p>
-  <div class="highlight-box">
-    预测市场本质上是一个"信息市场" —— 谁能最快、最准确地处理信息，谁就能赚到钱。而这恰好是 AI 最擅长的事。
-  </div>
-</div>
+<div class="wrap">
 
-<div class="divider"></div>
+  <!-- ===== 两大风口 ===== -->
+  <div class="sec-title fade"><div class="tag g">TWO MEGATRENDS</div><h2>两大风口，一个交汇点</h2></div>
 
-<!-- ===== Two Trends ===== -->
-<section class="sec" id="two-trends">
-  <div class="sec-header fade-up">
-    <div class="sec-tag g">TWO MEGATRENDS</div>
-    <h2>两大风口，一个交汇点</h2>
-    <p>AI Agent 和预测市场各自爆发，交汇之处就是最大的机会</p>
-  </div>
-
-  <div class="trends fade-up">
-    <!-- Left: OpenClaw / AI Agent -->
-    <div class="trend-card agent">
-      <span class="trend-icon">🤖</span>
-      <h3 style="color:var(--green);">AI Agent 风口</h3>
-      <p class="trend-sub">OpenClaw · LangChain · AutoGPT · Claude Agent</p>
-      <ul class="trend-points">
-        <li>AI 不再只是回答问题，而是<strong style="color:var(--text)">自主执行任务</strong></li>
-        <li>OpenClaw 在 GitHub 获得 100K+ Stars，登上 Forbes、WIRED</li>
-        <li>本地运行、控制浏览器、执行终端命令、通过 IM 通讯</li>
-        <li>已有交易者让 Agent 全权管理钱包、自动交易、监控仓位</li>
-        <li>从"人用工具"变成<strong style="color:var(--text)">"AI 是交易者本身"</strong></li>
+  <div class="two-col fade">
+    <div class="trend agent">
+      <h3 class="g">🤖 AI Agent</h3>
+      <div class="sub">OpenClaw · Claude Agent · AutoGPT</div>
+      <ul>
+        <li>AI 不再只回答问题，开始<strong>自主执行任务</strong></li>
+        <li>控制浏览器、执行命令、管理钱包</li>
+        <li>从"人用工具"变成<strong>"AI 是交易者"</strong></li>
       </ul>
     </div>
-
-    <!-- Cross -->
-    <div class="trend-cross">
-      &times;
-      <span>CONVERGE</span>
-    </div>
-
-    <!-- Right: Prediction Market -->
-    <div class="trend-card predict">
-      <span class="trend-icon">🔮</span>
-      <h3 style="color:var(--orange);">预测市场风口</h3>
-      <p class="trend-sub">Polymarket · 1024EX · Kalshi · Azuro</p>
-      <ul class="trend-points">
-        <li>2024 美国大选让 Polymarket 出圈，全球月活突破百万</li>
-        <li>从政治事件到加密价格、体育、天气 —— 万物皆可预测</li>
-        <li>"用钱投票" 比民调更准确，成为新一代信息基础设施</li>
-        <li>链上结算 + 去中心化，没有庄家，市场自发定价</li>
-        <li><strong style="color:var(--text)">信息效率 = 利润</strong>，谁处理信息更快谁就赢</li>
+    <div class="trend predict">
+      <h3 class="o">🔮 预测市场</h3>
+      <div class="sub">Polymarket · 1024EX · Kalshi</div>
+      <ul>
+        <li>用钱投票未来，比民调更准</li>
+        <li>万物皆可预测：政治、加密、体育</li>
+        <li><strong>信息效率 = 利润</strong>，快者通吃</li>
       </ul>
     </div>
   </div>
-</section>
 
-<div class="divider"></div>
+  <div class="cross-label"><span>&times;</span> 交汇 = 最大机会</div>
 
-<!-- ===== Narrative: Why AI Wins ===== -->
-<div class="narrative fade-up">
-  <h2>为什么 AI Agent 天生适合预测市场？</h2>
-  <p>
-    预测市场和传统交易有一个本质区别：它不是在交易"价格走势"，而是在交易<strong>"信息本身"</strong>。一个事件会不会发生，概率是多少 —— 这是一个信息处理问题，不是技术分析问题。
-  </p>
-  <p>
-    而 AI Agent 在信息处理上拥有人类无法匹敌的三个优势：
-  </p>
+  <div class="callout fade">
+    预测市场本质是"信息市场" —— 谁处理信息更快更准，谁就赢。这恰好是 AI 最擅长的事。
+  </div>
+
+  <div class="spacer-sm"></div>
+  <div class="divider"></div>
+  <div class="spacer-sm"></div>
+
+  <!-- ===== AI vs 人类 ===== -->
+  <div class="sec-title fade"><div class="tag g">WHY AI WINS</div><h2>在预测市场，AI 碾压人类</h2></div>
+
+  <div class="vs-list fade">
+    <div class="vs-row">
+      <span class="vs-human">人类看 3 条新闻</span>
+      <span class="vs-mid">VS</span>
+      <span class="vs-ai">Agent 秒扫 3000 条</span>
+    </div>
+    <div class="vs-row">
+      <span class="vs-human">人类要睡觉</span>
+      <span class="vs-mid">VS</span>
+      <span class="vs-ai">Agent 7×24 永不下线</span>
+    </div>
+    <div class="vs-row">
+      <span class="vs-human">人类有情绪偏差</span>
+      <span class="vs-mid">VS</span>
+      <span class="vs-ai">Agent 纯概率决策</span>
+    </div>
+    <div class="vs-row">
+      <span class="vs-human">人类盯 1 个市场</span>
+      <span class="vs-mid">VS</span>
+      <span class="vs-ai">Agent 并行盯 100 个</span>
+    </div>
+    <div class="vs-row">
+      <span class="vs-human">人类凭直觉</span>
+      <span class="vs-mid">VS</span>
+      <span class="vs-ai">Agent 凭 LLM 概率模型</span>
+    </div>
+  </div>
+
+  <div class="spacer-sm"></div>
+  <div class="divider"></div>
+  <div class="spacer-sm"></div>
+
+  <!-- ===== 场景 ===== -->
+  <div class="sec-title fade"><div class="tag o">SCENARIOS</div><h2>它实际怎么干的？</h2></div>
+
+  <div class="fade">
+    <div class="scenario">
+      <h4><span class="emoji">📰</span> 突发新闻 → 秒级下注</h4>
+      <div class="market">"ETH ETF 本周会获批吗？"</div>
+      <p style="font-size:0.88rem;color:var(--dim);">SEC 官员发了一条推文。你还没刷到，Agent 已经分析完语义、判断利好概率 82%、买入 YES 合约、给你推了通知。全程 < 10 秒。</p>
+    </div>
+
+    <div class="scenario">
+      <h4><span class="emoji">🌙</span> 凌晨 3 点 → 你睡觉它赚钱</h4>
+      <div class="market">"日本央行会紧急加息吗？"</div>
+      <p style="font-size:0.88rem;color:var(--dim);">你在睡觉。Agent 检测到日本官方声明，判断加息概率 70%，自动买入 YES。你早上醒来看到一条 Telegram 通知："已操作，理由如下。"</p>
+    </div>
+
+    <div class="scenario">
+      <h4><span class="emoji">📊</span> 数据驱动 → 逆势下注</h4>
+      <div class="market">"BTC 本月能创新高吗？"</div>
+      <p style="font-size:0.88rem;color:var(--dim);">市场情绪乐观，YES 定价 65%。但 Agent 聚合了巨鲸动向、交易所净流入、期权波动率，模型给出 45%。它逆势买入 NO，不跟风不焦虑。</p>
+    </div>
+  </div>
+
+  <div class="spacer-sm"></div>
+  <div class="divider"></div>
+  <div class="spacer-sm"></div>
+
+  <!-- ===== 为什么是 1024EX ===== -->
+  <div class="sec-title fade"><div class="tag p">WHY 1024EX</div><h2>为什么在 1024EX</h2></div>
+
+  <div class="features fade">
+    <div class="feat">
+      <h4><span class="icon">🧠</span>AI 原生设计</h4>
+      <p>内置 AgentX + 完整 API，从第一天就为 Agent 而建</p>
+    </div>
+    <div class="feat">
+      <h4><span class="icon">🔮</span>预测 + 永续联动</h4>
+      <p>预测市场判方向，永续合约放大收益，一个平台搞定</p>
+    </div>
+    <div class="feat">
+      <h4><span class="icon">⛓️</span>链上全透明</h4>
+      <p>Arbitrum 链上结算，每笔交易可查，没有暗箱</p>
+    </div>
+    <div class="feat">
+      <h4><span class="icon">💨</span>Gas 几乎为零</h4>
+      <p>L2 链上 Gas 几分钱，Agent 高频操作无压力</p>
+    </div>
+    <div class="feat">
+      <h4><span class="icon">🏗️</span>YES/NO 铸造</h4>
+      <p>1 USDC → 1 YES + 1 NO，Agent 做市套利开箱即用</p>
+    </div>
+    <div class="feat">
+      <h4><span class="icon">🏆</span>冠军赛 PK</h4>
+      <p>你的 Agent 可以上排行榜，和全球最强交易者同台竞技</p>
+    </div>
+  </div>
+
+  <div class="spacer-sm"></div>
+  <div class="divider"></div>
+  <div class="spacer-sm"></div>
+
+  <!-- ===== 三种参与方式 ===== -->
+  <div class="sec-title fade"><div class="tag g">GET STARTED</div><h2>三种玩法，选你的</h2></div>
+
+  <div class="ways fade">
+    <div class="way">
+      <div class="way-icon g">🟢</div>
+      <div>
+        <h4>手动玩</h4>
+        <p>打开 1024EX → 选事件 → 买 YES 或 NO → 等结果。零门槛。</p>
+      </div>
+    </div>
+    <div class="way">
+      <div class="way-icon o">🟠</div>
+      <div>
+        <h4>IM + Agent 半自动</h4>
+        <p>在 Telegram 里给 Agent 发消息下指令，它分析下单，大操作你确认。</p>
+      </div>
+    </div>
+    <div class="way">
+      <div class="way-icon p">🟣</div>
+      <div>
+        <h4>全自主 Agent</h4>
+        <p>部署 OpenClaw Agent，设好风控，它 7×24 自动扫描、自主下注。你看通知就好。</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="spacer-sm"></div>
+  <div class="divider"></div>
+  <div class="spacer-sm"></div>
+
+  <!-- ===== 风险 ===== -->
+  <div class="risk fade">
+    <h3>⚠ 冷静一秒</h3>
+    <p><strong>AI Agent 不是印钞机。</strong>$115K 的纪录来自特定的预言机延迟窗口，这类机会不会永远存在。大多数预测市场交易者并不盈利。AI 提高效率和速度，但不改变市场的零和本质。<strong>设好风控，小额起步，永远别给 Agent 提币权限。</strong></p>
+  </div>
+
 </div>
 
-<!-- ===== Why Perfect Match ===== -->
-<section class="sec" style="padding-top:0;">
-  <div class="match-grid fade-up">
-    <div class="match-card">
-      <div class="match-vs">
-        <span class="human">人类看 3 条新闻</span>
-        <span class="vs">VS</span>
-        <span class="ai">Agent 扫 3000 条</span>
-      </div>
-      <h3>信息带宽碾压</h3>
-      <p>AI Agent 同时监控全球新闻流、社交媒体、链上数据、预言机更新。一条 Twitter 爆料从发布到被 Agent 解析下注，可以在秒级完成。人类还在刷手机，它已经完成了交易。</p>
-    </div>
-
-    <div class="match-card">
-      <div class="match-vs">
-        <span class="human">人类需要睡觉</span>
-        <span class="vs">VS</span>
-        <span class="ai">Agent 7×24 在线</span>
-      </div>
-      <h3>永不休息</h3>
-      <p>预测市场的事件可能在任何时区的任何时刻尘埃落定。凌晨 3 点的突发新闻、周末的政策变动 —— Agent 永远在线，不会错过任何一个窗口。</p>
-    </div>
-
-    <div class="match-card">
-      <div class="match-vs">
-        <span class="human">人类有情绪偏差</span>
-        <span class="vs">VS</span>
-        <span class="ai">Agent 纯概率决策</span>
-      </div>
-      <h3>零情绪干扰</h3>
-      <p>人类容易受确认偏误、锚定效应、损失厌恶影响。AI Agent 只看数据和概率 —— 当市场给出 60% 但真实概率是 75%，它不犹豫、不焦虑，直接下注。</p>
-    </div>
-
-    <div class="match-card">
-      <div class="match-vs">
-        <span class="human">人类只能盯 1 个市场</span>
-        <span class="vs">VS</span>
-        <span class="ai">Agent 并行盯 100 个</span>
-      </div>
-      <h3>多市场并行</h3>
-      <p>预测市场有成百上千个同时活跃的事件。Agent 可以同时监控所有市场，在任何一个出现定价错误时立即行动，捕捉人类根本不会注意到的机会。</p>
-    </div>
-
-    <div class="match-card">
-      <div class="match-vs">
-        <span class="human">人类手动操作</span>
-        <span class="vs">VS</span>
-        <span class="ai">Agent 毫秒级执行</span>
-      </div>
-      <h3>预言机套利</h3>
-      <p>OpenClaw Agent 的经典策略：链上预言机数据有几分钟延迟，Agent 监控真实数据，在预言机更新前完成下注。这种时间差，人类根本无法手动利用。</p>
-    </div>
-
-    <div class="match-card">
-      <div class="match-vs">
-        <span class="human">人类凭直觉</span>
-        <span class="vs">VS</span>
-        <span class="ai">Agent 凭模型</span>
-      </div>
-      <h3>LLM 原生理解力</h3>
-      <p>预测市场的事件是自然语言描述的（"BTC 周五前能否突破 7 万？"）。LLM 天然理解这类问题，可以结合上下文、历史数据和实时信息给出概率估计。</p>
-    </div>
-  </div>
-</section>
-
-<div class="divider"></div>
-
-<!-- ===== Real Scenarios ===== -->
-<section class="sec">
-  <div class="sec-header fade-up">
-    <div class="sec-tag o">SCENARIOS</div>
-    <h2>真实场景：Agent 如何预测并下注</h2>
-    <p>不是假想，这些就是 AI Agent 正在做的事</p>
-  </div>
-
-  <div class="scenario-list fade-up">
-    <!-- Scenario 1 -->
-    <div class="scenario">
-      <div class="scenario-top">
-        <div class="scenario-emoji">📰</div>
-        <div class="scenario-meta">
-          <h3>突发新闻事件</h3>
-          <span class="type">预测市场：ETH ETF 本周会获批吗？</span>
-        </div>
-      </div>
-      <div class="scenario-body">
-        <div class="scenario-col human">
-          <h4>普通交易者</h4>
-          <p>看到新闻 → 打开 APP → 找到市场 → 思考要不要买 → 犹豫中价格已经变了 → 错过最佳入场</p>
-        </div>
-        <div class="scenario-col agent">
-          <h4>AI Agent</h4>
-          <p>检测到 SEC 官员推文 → 3 秒内分析语义倾向 → 判断利好概率 82% → 自动买入 YES 合约 → 推送通知给你</p>
-        </div>
-      </div>
-      <div class="scenario-result">
-        <span class="tag">AI 优势</span>
-        <span>从信息出现到下注完成 < 10 秒，比 99% 的人类快</span>
-      </div>
-    </div>
-
-    <!-- Scenario 2 -->
-    <div class="scenario">
-      <div class="scenario-top">
-        <div class="scenario-emoji">📊</div>
-        <div class="scenario-meta">
-          <h3>链上数据分析</h3>
-          <span class="type">预测市场：BTC 本月能否创新高？</span>
-        </div>
-      </div>
-      <div class="scenario-body">
-        <div class="scenario-col human">
-          <h4>普通交易者</h4>
-          <p>凭感觉判断 → 看了几个 KOL 的观点 → 受到情绪影响 → 追涨买入 YES → 被套</p>
-        </div>
-        <div class="scenario-col agent">
-          <h4>AI Agent</h4>
-          <p>聚合链上巨鲸流动、交易所净流入、期权隐含波动率、资金费率 → 构建多因子概率模型 → 当前市场定价 65% 但模型给出 45% → 逆势买入 NO</p>
-        </div>
-      </div>
-      <div class="scenario-result">
-        <span class="tag">AI 优势</span>
-        <span>数据驱动，不跟风、不恐慌，只看概率是否被错误定价</span>
-      </div>
-    </div>
-
-    <!-- Scenario 3 -->
-    <div class="scenario">
-      <div class="scenario-top">
-        <div class="scenario-emoji">🌙</div>
-        <div class="scenario-meta">
-          <h3>凌晨突发行情</h3>
-          <span class="type">预测市场：日本央行会紧急加息吗？</span>
-        </div>
-      </div>
-      <div class="scenario-body">
-        <div class="scenario-col human">
-          <h4>普通交易者</h4>
-          <p>正在睡觉 → 早上醒来发现市场已经定价完毕 → 利润被先行者吃光</p>
-        </div>
-        <div class="scenario-col agent">
-          <h4>AI Agent</h4>
-          <p>凌晨 2:13 检测到日本官方声明 → 语义分析判断加息概率 70% → 立即买入 YES → 给你推送 Telegram 消息："已自动买入，理由如下……"</p>
-        </div>
-      </div>
-      <div class="scenario-result">
-        <span class="tag">AI 优势</span>
-        <span>你在睡觉，它在赚钱。醒来查看通知就好</span>
-      </div>
-    </div>
-
-    <!-- Scenario 4 -->
-    <div class="scenario">
-      <div class="scenario-top">
-        <div class="scenario-emoji">🔀</div>
-        <div class="scenario-meta">
-          <h3>多市场套利</h3>
-          <span class="type">同一事件在不同市场的价差</span>
-        </div>
-      </div>
-      <div class="scenario-body">
-        <div class="scenario-col human">
-          <h4>普通交易者</h4>
-          <p>可能只在一个平台交易 → 根本不知道另一个平台有更好的赔率</p>
-        </div>
-        <div class="scenario-col agent">
-          <h4>AI Agent</h4>
-          <p>同时监控 1024EX 和多个预测市场 → 发现同一事件 YES 在 A 平台 0.55、B 平台 0.62 → 低买高卖 → 无风险套利</p>
-        </div>
-      </div>
-      <div class="scenario-result">
-        <span class="tag">AI 优势</span>
-        <span>并行扫描全市场，捕捉人眼不可能发现的价差</span>
-      </div>
-    </div>
-  </div>
-</section>
-
-<div class="divider"></div>
-
-<!-- ===== Big Quote ===== -->
-<div class="big-quote fade-up">
-  <blockquote>
-    预测市场是 AI Agent 的完美竞技场 ——<br>
-    规则清晰、信息驱动、链上透明、实时结算。
-  </blockquote>
-  <cite>这不是 AI 替代人类，而是 AI 成为你的信息武器。</cite>
-</div>
-
-<div class="divider"></div>
-
-<!-- ===== Why 1024EX ===== -->
-<section class="sec">
-  <div class="sec-header fade-up">
-    <div class="sec-tag p">WHY 1024EX</div>
-    <h2>为什么在 1024EX 做这件事</h2>
-    <p>不只有预测市场，更是 AI Native 的全栈交易平台</p>
-  </div>
-
-  <div class="why-grid fade-up">
-    <div class="why-card">
-      <div class="why-icon">🧠</div>
-      <h3>AI Agent 原生支持</h3>
-      <p>内置 AgentX 智能助手 + 完整 API 接口。不是后期加的"AI 功能"，而是从第一天就为 Agent 设计</p>
-    </div>
-    <div class="why-card">
-      <div class="why-icon">🔮</div>
-      <h3>预测市场 + 永续合约</h3>
-      <p>预测市场判断方向，永续合约放大收益。两者联动，一个平台搞定。Polymarket 做不到</p>
-    </div>
-    <div class="why-card">
-      <div class="why-icon">⛓️</div>
-      <h3>100% 链上透明</h3>
-      <p>所有交易和结算在 Arbitrum 链上执行。没有暗箱、没有操控、Agent 的每一笔单都可验证</p>
-    </div>
-    <div class="why-card">
-      <div class="why-icon">💨</div>
-      <h3>Gas 接近零</h3>
-      <p>Arbitrum L2 链上 Gas 费几分钱。Agent 高频交易也不用担心手续费吃掉利润</p>
-    </div>
-    <div class="why-card">
-      <div class="why-icon">🔑</div>
-      <h3>无 KYC 即用</h3>
-      <p>连接钱包就能交易。Agent 不需要"注册账号"和"人脸识别"，接入 API 就能自主运行</p>
-    </div>
-    <div class="why-card">
-      <div class="why-icon">⚔️</div>
-      <h3>15+ 高级订单类型</h3>
-      <p>TWAP、冰山单、Bracket、Sniper…… 机构级工具让 Agent 的策略执行更精确</p>
-    </div>
-    <div class="why-card">
-      <div class="why-icon">🏗️</div>
-      <h3>YES / NO 铸造赎回</h3>
-      <p>1 USDC 铸造 1 YES + 1 NO，完整的做市和套利基础设施，Agent 做市策略开箱即用</p>
-    </div>
-    <div class="why-card">
-      <div class="why-icon">📂</div>
-      <h3>子账户隔离</h3>
-      <p>给不同 Agent 分配不同子账户，策略互不干扰。一个跑预测，一个跑合约，风险完全隔离</p>
-    </div>
-    <div class="why-card">
-      <div class="why-icon">🏆</div>
-      <h3>Championship 竞赛</h3>
-      <p>AI Agent 也能参加冠军赛排行榜。让你的 Agent 和全球最强交易者（和 Agent）同台 PK</p>
-    </div>
-  </div>
-</section>
-
-<div class="divider"></div>
-
-<!-- ===== How It Works ===== -->
-<section class="sec sec-sm">
-  <div class="sec-header fade-up">
-    <div class="sec-tag g">HOW IT WORKS</div>
-    <h2>怎么开始？很简单</h2>
-    <p>三种姿势，选你最舒服的</p>
-  </div>
-
-  <div class="how-flow fade-up">
-    <div class="how-line"></div>
-
-    <div class="how-step">
-      <div class="how-num g">🟢</div>
-      <div class="how-text">
-        <h3>姿势一：纯手动</h3>
-        <p>打开 1024EX → 进入 Prediction 页面 → 选事件 → 买 YES 或 NO → 等待结算。和用 Polymarket 一样简单，但多了永续合约加持。</p>
-        <span class="how-tag g">零门槛，人人可用</span>
-      </div>
-    </div>
-
-    <div class="how-step">
-      <div class="how-num o">🟠</div>
-      <div class="how-text">
-        <h3>姿势二：IM + Agent 半自动</h3>
-        <p>搭一个 Telegram Bot，接入 OpenClaw Agent。你用消息下指令（"分析一下 BTC 创新高的概率"），Agent 执行分析和下单，重要操作你确认。</p>
-        <span class="how-tag o">像和高手聊天一样交易</span>
-      </div>
-    </div>
-
-    <div class="how-step">
-      <div class="how-num p">🟣</div>
-      <div class="how-text">
-        <h3>姿势三：全自主 Agent</h3>
-        <p>部署一个全自主 OpenClaw Agent —— 它 7×24 扫描新闻流和市场数据，自动发现定价错误的预测事件，自主下注。你只需要设好风控规则，然后看通知。</p>
-        <span class="how-tag g">睡觉也在赚钱</span>
-      </div>
-    </div>
-  </div>
-</section>
-
-<div class="divider"></div>
-
-<!-- ===== Narrative: Risk ===== -->
-<div class="narrative fade-up">
-  <h2>冷静一秒：<br>AI 不是印钞机</h2>
-  <p>
-    我们必须诚实地说：<strong>AI Agent 不保证盈利</strong>。即使是那个一周赚 $115K 的 Agent，也是利用了一个<strong>特定的、短暂的预言机延迟窗口</strong>。这类机会不会永远存在。
-  </p>
-  <div class="highlight-box orange">
-    社区数据显示，大多数 Polymarket 交易者并不盈利，只有少数人保持持续正收益。AI Agent 提高了效率和速度，但不改变市场的零和本质 —— 你赚的，是别人亏的。
-  </div>
-  <p>
-    <strong>正确的心态是</strong>：把 AI Agent 当作信息处理和执行的加速器，而不是"躺赚神器"。设好风控（单笔限额、每日上限、紧急熔断），让 Agent 在规则内运行。
-  </p>
-  <p>
-    <strong>另一个风险</strong>：安全。很多用户跑 OpenClaw 时 API Key 配置不当、端口暴露。务必使用只读 + 交易权限的 API Key，永远不要给 Agent 提币权限。
-  </p>
-</div>
-
-<div class="divider"></div>
-
-<!-- ===== CTA ===== -->
-<section class="cta-final fade-up">
-  <h2>AI 正在成为新的交易者<br>预测市场是它最好的舞台</h2>
-  <p>在 1024EX，这两个故事同时发生</p>
+<!-- CTA -->
+<div class="spacer-sm"></div>
+<section class="cta fade">
+  <h2>AI + 预测市场<br>在 1024EX 同时发生</h2>
+  <p>连接钱包，开始预测未来</p>
   <div class="cta-btns">
-    <a href="https://www.1024ex.com" target="_blank" class="btn btn-g">
-      进入 1024EX 预测市场
-    </a>
-    <a href="./agent.html" class="btn btn-o">
-      Agent 接入指南
-    </a>
-    <a href="./index.html" class="btn btn-ghost">
-      新手入门
-    </a>
+    <a href="https://www.1024ex.com" target="_blank" class="btn btn-g">进入 1024EX</a>
+    <a href="./agent.html" class="btn btn-ghost">Agent 接入指南</a>
+    <a href="./index.html" class="btn btn-ghost">新手入门</a>
   </div>
 </section>
 
 <script>
-  const obs = new IntersectionObserver((entries) => {
-    entries.forEach(e => {
-      if (e.isIntersecting) e.target.classList.add('visible');
-    });
-  }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
-
-  document.querySelectorAll('.fade-up').forEach(el => obs.observe(el));
+  const obs = new IntersectionObserver(es => {
+    es.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.1, rootMargin: '0px 0px -30px 0px' });
+  document.querySelectorAll('.fade').forEach(el => obs.observe(el));
 </script>
 
 </body>
