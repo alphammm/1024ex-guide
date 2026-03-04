@@ -1,0 +1,1294 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1024EX AI Agent 接入指南 - IM 驱动的链上交易</title>
+  <style>
+    :root {
+      --primary: #6C5CE7;
+      --primary-light: #A29BFE;
+      --accent: #00CEC9;
+      --accent-glow: rgba(0, 206, 201, 0.3);
+      --agent-green: #00E676;
+      --agent-bg: rgba(0, 230, 118, 0.08);
+      --im-blue: #2196F3;
+      --im-bg: rgba(33, 150, 243, 0.08);
+      --bg-dark: #060714;
+      --bg-card: #0E0F22;
+      --bg-card-hover: #161838;
+      --bg-terminal: #0A0C1A;
+      --text: #E8E8F0;
+      --text-dim: #7B7B99;
+      --border: #1E2044;
+      --success: #00E676;
+      --warning: #FFD600;
+      --danger: #FF5252;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'SF Mono', 'JetBrains Mono', 'Fira Code', 'PingFang SC', monospace;
+      background: var(--bg-dark);
+      color: var(--text);
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+
+    /* ===== Hero ===== */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 2rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 20% 40%, rgba(0, 230, 118, 0.06) 0%, transparent 50%),
+        radial-gradient(circle at 80% 60%, rgba(0, 206, 201, 0.06) 0%, transparent 50%),
+        radial-gradient(circle at 50% 20%, rgba(108, 92, 231, 0.08) 0%, transparent 40%);
+    }
+
+    /* Matrix rain effect */
+    .matrix-bg {
+      position: absolute;
+      inset: 0;
+      opacity: 0.04;
+      background-image:
+        repeating-linear-gradient(0deg, transparent, transparent 35px, rgba(0,230,118,0.1) 35px, rgba(0,230,118,0.1) 36px);
+      animation: matrixScroll 20s linear infinite;
+    }
+
+    @keyframes matrixScroll {
+      from { background-position: 0 0; }
+      to { background-position: 0 360px; }
+    }
+
+    .hero-content { position: relative; z-index: 1; max-width: 860px; }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 18px;
+      background: var(--agent-bg);
+      border: 1px solid rgba(0, 230, 118, 0.3);
+      border-radius: 100px;
+      font-size: 0.8rem;
+      color: var(--agent-green);
+      margin-bottom: 1.5rem;
+      letter-spacing: 1px;
+    }
+
+    .status-dot {
+      width: 8px; height: 8px;
+      background: var(--agent-green);
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(0, 230, 118, 0.4); }
+      50% { box-shadow: 0 0 0 6px rgba(0, 230, 118, 0); }
+    }
+
+    .hero h1 {
+      font-size: clamp(2.2rem, 5vw, 3.6rem);
+      font-weight: 800;
+      margin-bottom: 1rem;
+      background: linear-gradient(135deg, var(--agent-green) 0%, var(--accent) 50%, var(--primary-light) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero p {
+      font-size: 1.15rem;
+      color: var(--text-dim);
+      margin-bottom: 2.5rem;
+      max-width: 650px;
+      margin-left: auto; margin-right: auto;
+      font-family: -apple-system, 'PingFang SC', sans-serif;
+    }
+
+    .hero-tags {
+      display: flex;
+      gap: 0.8rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 2.5rem;
+    }
+
+    .hero-tag {
+      padding: 6px 16px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .hero-tag.green { background: var(--agent-bg); color: var(--agent-green); border: 1px solid rgba(0,230,118,0.2); }
+    .hero-tag.blue { background: var(--im-bg); color: var(--im-blue); border: 1px solid rgba(33,150,243,0.2); }
+    .hero-tag.purple { background: rgba(108,92,231,0.1); color: var(--primary-light); border: 1px solid rgba(108,92,231,0.2); }
+
+    /* ===== Section ===== */
+    .section {
+      padding: 80px 2rem;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .section-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 14px;
+      border-radius: 100px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      margin-bottom: 1rem;
+    }
+
+    .section-label.green { background: var(--agent-bg); color: var(--agent-green); border: 1px solid rgba(0,230,118,0.2); }
+    .section-label.blue { background: var(--im-bg); color: var(--im-blue); border: 1px solid rgba(33,150,243,0.2); }
+    .section-label.purple { background: rgba(108,92,231,0.1); color: var(--primary-light); border: 1px solid rgba(108,92,231,0.2); }
+
+    .section-header { text-align: center; margin-bottom: 3.5rem; }
+    .section-header h2 {
+      font-size: 2rem;
+      margin-bottom: 0.6rem;
+      font-family: -apple-system, 'PingFang SC', sans-serif;
+    }
+    .section-header p {
+      color: var(--text-dim);
+      font-size: 1rem;
+      max-width: 600px;
+      margin: 0 auto;
+      font-family: -apple-system, 'PingFang SC', sans-serif;
+    }
+
+    /* ===== Architecture Diagram ===== */
+    .arch-diagram {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 3rem 2rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .arch-layers {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    .arch-layer {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1.2rem 1.5rem;
+      border-radius: 12px;
+      text-align: left;
+    }
+
+    .arch-layer.im {
+      background: var(--im-bg);
+      border: 1px solid rgba(33,150,243,0.2);
+    }
+    .arch-layer.agent {
+      background: var(--agent-bg);
+      border: 1px solid rgba(0,230,118,0.2);
+    }
+    .arch-layer.api {
+      background: rgba(108,92,231,0.08);
+      border: 1px solid rgba(108,92,231,0.2);
+    }
+    .arch-layer.chain {
+      background: rgba(0,206,201,0.08);
+      border: 1px solid rgba(0,206,201,0.2);
+    }
+
+    .arch-icon {
+      font-size: 1.8rem;
+      min-width: 50px;
+      text-align: center;
+    }
+
+    .arch-text h4 {
+      font-size: 0.95rem;
+      margin-bottom: 2px;
+      font-family: -apple-system, 'PingFang SC', sans-serif;
+    }
+    .arch-text span {
+      font-size: 0.8rem;
+      color: var(--text-dim);
+      font-family: -apple-system, 'PingFang SC', sans-serif;
+    }
+
+    .arch-arrow {
+      text-align: center;
+      color: var(--text-dim);
+      font-size: 1.2rem;
+      margin: -0.5rem 0;
+    }
+
+    /* ===== IM Chat Demo ===== */
+    .chat-container {
+      max-width: 520px;
+      margin: 0 auto;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      overflow: hidden;
+    }
+
+    .chat-header {
+      padding: 1rem 1.5rem;
+      background: rgba(33, 150, 243, 0.08);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .chat-avatar {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+    }
+
+    .chat-avatar.bot { background: var(--agent-bg); }
+    .chat-name {
+      font-weight: 600;
+      font-size: 0.95rem;
+      font-family: -apple-system, 'PingFang SC', sans-serif;
+    }
+    .chat-status {
+      font-size: 0.75rem;
+      color: var(--agent-green);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .chat-messages {
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      min-height: 400px;
+    }
+
+    .msg {
+      max-width: 85%;
+      padding: 10px 14px;
+      border-radius: 14px;
+      font-size: 0.9rem;
+      line-height: 1.6;
+      font-family: -apple-system, 'PingFang SC', sans-serif;
+      animation: msgIn 0.4s ease;
+    }
+
+    @keyframes msgIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .msg.user {
+      align-self: flex-end;
+      background: linear-gradient(135deg, var(--primary), #5a4bd1);
+      color: #fff;
+      border-bottom-right-radius: 4px;
+    }
+
+    .msg.bot {
+      align-self: flex-start;
+      background: var(--bg-card-hover);
+      border: 1px solid var(--border);
+      border-bottom-left-radius: 4px;
+    }
+
+    .msg-time {
+      font-size: 0.7rem;
+      color: var(--text-dim);
+      margin-top: 4px;
+      text-align: right;
+    }
+
+    .msg code {
+      background: rgba(0, 230, 118, 0.1);
+      color: var(--agent-green);
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 0.85rem;
+    }
+
+    .msg .profit { color: var(--agent-green); font-weight: 600; }
+    .msg .loss { color: var(--danger); font-weight: 600; }
+    .msg .warn { color: var(--warning); font-weight: 600; }
+
+    /* ===== Command Table ===== */
+    .cmd-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 1rem;
+    }
+
+    .cmd-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.5rem;
+      transition: all 0.3s;
+    }
+
+    .cmd-card:hover {
+      border-color: var(--agent-green);
+      transform: translateY(-3px);
+    }
+
+    .cmd-category {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 1rem;
+    }
+
+    .cmd-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      gap: 1rem;
+    }
+
+    .cmd-item:last-child { border: none; }
+
+    .cmd-syntax {
+      font-family: 'SF Mono', 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      color: var(--agent-green);
+      white-space: nowrap;
+    }
+
+    .cmd-desc {
+      font-size: 0.82rem;
+      color: var(--text-dim);
+      text-align: right;
+      font-family: -apple-system, 'PingFang SC', sans-serif;
+    }
+
+    /* ===== Code Block ===== */
+    .code-block {
+      background: var(--bg-terminal);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      margin: 1.5rem 0;
+    }
+
+    .code-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 16px;
+      background: rgba(255,255,255,0.02);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .code-dots {
+      display: flex;
+      gap: 6px;
+    }
+
+    .code-dots span {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+    }
+
+    .code-dots span:nth-child(1) { background: #FF5F57; }
+    .code-dots span:nth-child(2) { background: #FFBD2E; }
+    .code-dots span:nth-child(3) { background: #28CA41; }
+
+    .code-lang {
+      font-size: 0.75rem;
+      color: var(--text-dim);
+    }
+
+    .code-body {
+      padding: 1.2rem 1.5rem;
+      font-size: 0.85rem;
+      line-height: 1.8;
+      overflow-x: auto;
+    }
+
+    .code-body pre {
+      margin: 0;
+      font-family: 'SF Mono', 'JetBrains Mono', 'Fira Code', monospace;
+    }
+
+    .hl-keyword { color: #C792EA; }
+    .hl-func { color: #82AAFF; }
+    .hl-string { color: #C3E88D; }
+    .hl-comment { color: #546E7A; font-style: italic; }
+    .hl-var { color: #F78C6C; }
+    .hl-type { color: #FFCB6B; }
+    .hl-op { color: #89DDFF; }
+
+    /* ===== Flow Cards ===== */
+    .flow-horizontal {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
+      position: relative;
+    }
+
+    .flow-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.8rem 1.5rem;
+      text-align: center;
+      transition: all 0.3s;
+      position: relative;
+    }
+
+    .flow-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-4px);
+    }
+
+    .flow-card .step-num {
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 1rem;
+      margin: 0 auto 1rem;
+    }
+
+    .flow-card h3 {
+      font-size: 1rem;
+      margin-bottom: 0.5rem;
+      font-family: -apple-system, 'PingFang SC', sans-serif;
+    }
+
+    .flow-card p {
+      font-size: 0.85rem;
+      color: var(--text-dim);
+      font-family: -apple-system, 'PingFang SC', sans-serif;
+    }
+
+    /* ===== IM Platform Grid ===== */
+    .platform-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.2rem;
+    }
+
+    .platform-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.8rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 0.8rem;
+      transition: all 0.3s;
+    }
+
+    .platform-card:hover {
+      border-color: var(--im-blue);
+      transform: translateY(-3px);
+    }
+
+    .platform-icon { font-size: 2.4rem; }
+
+    .platform-card h3 {
+      font-size: 1.05rem;
+      font-family: -apple-system, 'PingFang SC', sans-serif;
+    }
+
+    .platform-card p {
+      font-size: 0.85rem;
+      color: var(--text-dim);
+      font-family: -apple-system, 'PingFang SC', sans-serif;
+    }
+
+    .platform-tag {
+      padding: 3px 10px;
+      border-radius: 100px;
+      font-size: 0.7rem;
+      font-weight: 600;
+    }
+
+    .platform-tag.ready { background: var(--agent-bg); color: var(--agent-green); }
+    .platform-tag.soon { background: rgba(255,214,0,0.1); color: var(--warning); }
+
+    /* ===== Use Cases ===== */
+    .usecase-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .usecase-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2rem;
+      transition: all 0.3s;
+    }
+
+    .usecase-card:hover {
+      border-color: var(--primary);
+      transform: translateY(-3px);
+    }
+
+    .usecase-icon {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+    }
+
+    .usecase-card h3 {
+      font-size: 1.1rem;
+      margin-bottom: 0.6rem;
+      font-family: -apple-system, 'PingFang SC', sans-serif;
+    }
+
+    .usecase-card p {
+      font-size: 0.9rem;
+      color: var(--text-dim);
+      font-family: -apple-system, 'PingFang SC', sans-serif;
+    }
+
+    .usecase-tags {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 1rem;
+    }
+
+    .usecase-tag {
+      padding: 3px 10px;
+      background: rgba(108,92,231,0.1);
+      border-radius: 6px;
+      font-size: 0.75rem;
+      color: var(--primary-light);
+    }
+
+    /* ===== Safety Section ===== */
+    .safety-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.2rem;
+    }
+
+    .safety-card {
+      padding: 1.5rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      display: flex;
+      gap: 1rem;
+      align-items: flex-start;
+    }
+
+    .safety-icon {
+      font-size: 1.6rem;
+      min-width: 40px;
+      text-align: center;
+    }
+
+    .safety-card h4 {
+      font-size: 0.95rem;
+      margin-bottom: 4px;
+      font-family: -apple-system, 'PingFang SC', sans-serif;
+    }
+
+    .safety-card p {
+      font-size: 0.85rem;
+      color: var(--text-dim);
+      font-family: -apple-system, 'PingFang SC', sans-serif;
+    }
+
+    /* ===== CTA ===== */
+    .cta-section {
+      text-align: center;
+      padding: 80px 2rem 120px;
+    }
+
+    .cta-section h2 {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+      font-family: -apple-system, 'PingFang SC', sans-serif;
+    }
+
+    .cta-section p {
+      color: var(--text-dim);
+      margin-bottom: 2rem;
+      font-family: -apple-system, 'PingFang SC', sans-serif;
+    }
+
+    .cta-buttons {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      padding: 14px 32px;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.3s;
+      cursor: pointer;
+      border: none;
+      font-family: -apple-system, 'PingFang SC', sans-serif;
+    }
+
+    .btn-green {
+      background: linear-gradient(135deg, #00E676, #00CEC9);
+      color: #0A0B1A;
+    }
+
+    .btn-green:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(0, 230, 118, 0.4);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .btn-ghost:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    /* ===== Divider ===== */
+    .divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border), transparent);
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    /* ===== Animations ===== */
+    .fade-up {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .fade-up.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ===== Responsive ===== */
+    @media (max-width: 768px) {
+      .flow-horizontal { grid-template-columns: 1fr 1fr; }
+      .section { padding: 60px 1.2rem; }
+      .chat-messages { min-height: auto; }
+    }
+
+    @media (max-width: 480px) {
+      .flow-horizontal { grid-template-columns: 1fr; }
+      .cmd-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ===== Hero ===== -->
+<section class="hero">
+  <div class="matrix-bg"></div>
+  <div class="hero-content">
+    <div class="hero-badge">
+      <span class="status-dot"></span>
+      AI AGENT TRADING INTERFACE
+    </div>
+    <h1>用对话驱动链上交易</h1>
+    <p>让 AI Agent 通过 IM 消息操控 1024EX —— 自然语言下单、实时监控、风控告警，一条消息搞定一切</p>
+    <div class="hero-tags">
+      <span class="hero-tag green">OpenClaw 兼容</span>
+      <span class="hero-tag blue">Telegram / Discord / 微信</span>
+      <span class="hero-tag purple">REST & WebSocket API</span>
+    </div>
+    <a href="#architecture" class="btn btn-green" onclick="event.preventDefault();document.getElementById('architecture').scrollIntoView({behavior:'smooth'})">
+      查看架构设计 &darr;
+    </a>
+  </div>
+</section>
+
+<!-- ===== Architecture ===== -->
+<section class="section" id="architecture">
+  <div class="section-header fade-up">
+    <div class="section-label green">ARCHITECTURE</div>
+    <h2>系统架构：从消息到链上</h2>
+    <p>用户发一条 IM 消息，AI Agent 理解意图，调用 API 执行，全链上结算</p>
+  </div>
+
+  <div class="arch-diagram fade-up">
+    <div class="arch-layers">
+      <div class="arch-layer im">
+        <div class="arch-icon">💬</div>
+        <div class="arch-text">
+          <h4>IM 层 — 用户入口</h4>
+          <span>Telegram Bot / Discord Bot / 微信机器人 / Web Chat</span>
+        </div>
+      </div>
+      <div class="arch-arrow">&#8595;</div>
+      <div class="arch-layer agent">
+        <div class="arch-icon">🧠</div>
+        <div class="arch-text">
+          <h4>AI Agent 层 — 意图理解 & 决策</h4>
+          <span>OpenClaw / LangChain / AutoGPT 解析自然语言 → 交易指令</span>
+        </div>
+      </div>
+      <div class="arch-arrow">&#8595;</div>
+      <div class="arch-layer api">
+        <div class="arch-icon">&#9881;</div>
+        <div class="arch-text">
+          <h4>API 层 — 指令执行</h4>
+          <span>1024EX REST API + WebSocket 实时推送（订单/仓位/行情）</span>
+        </div>
+      </div>
+      <div class="arch-arrow">&#8595;</div>
+      <div class="arch-layer chain">
+        <div class="arch-icon">&#9939;</div>
+        <div class="arch-text">
+          <h4>链上层 — 结算 & 验证</h4>
+          <span>Arbitrum 链上执行，交易透明可查，资金由智能合约托管</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ===== IM Chat Demo ===== -->
+<section class="section" id="im-demo">
+  <div class="section-header fade-up">
+    <div class="section-label blue">LIVE DEMO</div>
+    <h2>对话即交易</h2>
+    <p>像跟朋友聊天一样操控你的交易 —— 看看实际对话长什么样</p>
+  </div>
+
+  <div class="chat-container fade-up" id="chatDemo">
+    <div class="chat-header">
+      <div class="chat-avatar bot">🤖</div>
+      <div>
+        <div class="chat-name">1024EX Agent</div>
+        <div class="chat-status"><span class="status-dot" style="width:6px;height:6px;"></span> 在线 · Arbitrum</div>
+      </div>
+    </div>
+    <div class="chat-messages" id="chatMessages"></div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ===== IM Commands ===== -->
+<section class="section" id="commands">
+  <div class="section-header fade-up">
+    <div class="section-label green">COMMANDS</div>
+    <h2>IM 指令速查表</h2>
+    <p>支持自然语言和结构化指令两种模式，覆盖完整交易生命周期</p>
+  </div>
+
+  <div class="cmd-grid fade-up">
+    <div class="cmd-card">
+      <div class="cmd-category">行情查询</div>
+      <div class="cmd-item">
+        <span class="cmd-syntax">/price BTC</span>
+        <span class="cmd-desc">查看 BTC 实时价格</span>
+      </div>
+      <div class="cmd-item">
+        <span class="cmd-syntax">/kline ETH 4h</span>
+        <span class="cmd-desc">ETH 4小时K线摘要</span>
+      </div>
+      <div class="cmd-item">
+        <span class="cmd-syntax">/funding</span>
+        <span class="cmd-desc">查看资金费率排行</span>
+      </div>
+      <div class="cmd-item">
+        <span class="cmd-syntax">/depth BTC</span>
+        <span class="cmd-desc">查看 BTC 深度盘口</span>
+      </div>
+    </div>
+
+    <div class="cmd-card">
+      <div class="cmd-category">开仓交易</div>
+      <div class="cmd-item">
+        <span class="cmd-syntax">/long BTC 100u 10x</span>
+        <span class="cmd-desc">市价做多 BTC</span>
+      </div>
+      <div class="cmd-item">
+        <span class="cmd-syntax">/short ETH 50u 5x</span>
+        <span class="cmd-desc">市价做空 ETH</span>
+      </div>
+      <div class="cmd-item">
+        <span class="cmd-syntax">/limit long BTC 60000 100u</span>
+        <span class="cmd-desc">限价挂多单</span>
+      </div>
+      <div class="cmd-item">
+        <span class="cmd-syntax">/twap BTC 500u 1h</span>
+        <span class="cmd-desc">TWAP 分时段建仓</span>
+      </div>
+    </div>
+
+    <div class="cmd-card">
+      <div class="cmd-category">仓位管理</div>
+      <div class="cmd-item">
+        <span class="cmd-syntax">/positions</span>
+        <span class="cmd-desc">查看所有持仓</span>
+      </div>
+      <div class="cmd-item">
+        <span class="cmd-syntax">/close BTC</span>
+        <span class="cmd-desc">平掉 BTC 仓位</span>
+      </div>
+      <div class="cmd-item">
+        <span class="cmd-syntax">/tp BTC 70000</span>
+        <span class="cmd-desc">设止盈价</span>
+      </div>
+      <div class="cmd-item">
+        <span class="cmd-syntax">/sl BTC 58000</span>
+        <span class="cmd-desc">设止损价</span>
+      </div>
+    </div>
+
+    <div class="cmd-card">
+      <div class="cmd-category">账户 & 风控</div>
+      <div class="cmd-item">
+        <span class="cmd-syntax">/balance</span>
+        <span class="cmd-desc">查看账户余额</span>
+      </div>
+      <div class="cmd-item">
+        <span class="cmd-syntax">/pnl today</span>
+        <span class="cmd-desc">今日盈亏统计</span>
+      </div>
+      <div class="cmd-item">
+        <span class="cmd-syntax">/risk</span>
+        <span class="cmd-desc">当前风险敞口</span>
+      </div>
+      <div class="cmd-item">
+        <span class="cmd-syntax">/alert BTC > 70000</span>
+        <span class="cmd-desc">设置价格提醒</span>
+      </div>
+    </div>
+
+    <div class="cmd-card">
+      <div class="cmd-category">自然语言（AI 模式）</div>
+      <div class="cmd-item">
+        <span class="cmd-syntax" style="white-space:normal;">"帮我用100u 10倍杠杆做多比特币"</span>
+        <span class="cmd-desc">→ 自动解析执行</span>
+      </div>
+      <div class="cmd-item">
+        <span class="cmd-syntax" style="white-space:normal;">"现在适合抄底ETH吗"</span>
+        <span class="cmd-desc">→ AI 分析回复</span>
+      </div>
+      <div class="cmd-item">
+        <span class="cmd-syntax" style="white-space:normal;">"把所有亏损超过5%的仓位平掉"</span>
+        <span class="cmd-desc">→ 批量止损</span>
+      </div>
+      <div class="cmd-item">
+        <span class="cmd-syntax" style="white-space:normal;">"今天赚了多少"</span>
+        <span class="cmd-desc">→ PnL 汇总</span>
+      </div>
+    </div>
+
+    <div class="cmd-card">
+      <div class="cmd-category">高级策略</div>
+      <div class="cmd-item">
+        <span class="cmd-syntax">/grid BTC 58k-65k 10</span>
+        <span class="cmd-desc">网格交易</span>
+      </div>
+      <div class="cmd-item">
+        <span class="cmd-syntax">/dca BTC 50u daily</span>
+        <span class="cmd-desc">定投策略</span>
+      </div>
+      <div class="cmd-item">
+        <span class="cmd-syntax">/copy @trader123</span>
+        <span class="cmd-desc">跟单交易</span>
+      </div>
+      <div class="cmd-item">
+        <span class="cmd-syntax">/backtest ma_cross 30d</span>
+        <span class="cmd-desc">策略回测</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ===== Quick Start Flow ===== -->
+<section class="section" id="quickstart">
+  <div class="section-header fade-up">
+    <div class="section-label purple">QUICK START</div>
+    <h2>5 分钟接入</h2>
+    <p>从零开始，让你的 AI Agent 通过 IM 操控 1024EX</p>
+  </div>
+
+  <div class="flow-horizontal fade-up">
+    <div class="flow-card">
+      <div class="step-num">1</div>
+      <h3>获取 API Key</h3>
+      <p>在 1024EX 账户设置中创建 API Key & Secret</p>
+    </div>
+    <div class="flow-card">
+      <div class="step-num">2</div>
+      <h3>部署 Agent</h3>
+      <p>用 OpenClaw / LangChain 搭建 Agent，加载 1024EX Tool</p>
+    </div>
+    <div class="flow-card">
+      <div class="step-num">3</div>
+      <h3>接入 IM Bot</h3>
+      <p>创建 Telegram / Discord Bot，绑定到 Agent 消息入口</p>
+    </div>
+    <div class="flow-card">
+      <div class="step-num">4</div>
+      <h3>发消息交易</h3>
+      <p>给 Bot 发消息即可下单、查仓位、看行情</p>
+    </div>
+  </div>
+
+  <!-- Code Example -->
+  <div class="fade-up" style="margin-top:2.5rem;">
+    <div class="code-block">
+      <div class="code-header">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <span class="code-lang">agent.py — OpenClaw Agent 核心代码</span>
+      </div>
+      <div class="code-body"><pre>
+<span class="hl-keyword">from</span> openclaw <span class="hl-keyword">import</span> Agent, Tool
+<span class="hl-keyword">from</span> exchange_1024 <span class="hl-keyword">import</span> TradingClient
+
+<span class="hl-comment"># 初始化 1024EX 交易客户端</span>
+client = TradingClient(
+    api_key=<span class="hl-string">"your_api_key"</span>,
+    api_secret=<span class="hl-string">"your_api_secret"</span>,
+    network=<span class="hl-string">"arbitrum"</span>
+)
+
+<span class="hl-comment"># 定义交易工具集</span>
+tools = [
+    Tool(<span class="hl-string">"market_order"</span>,  client.market_order,  <span class="hl-string">"市价开仓: 方向/币种/金额/杠杆"</span>),
+    Tool(<span class="hl-string">"limit_order"</span>,   client.limit_order,   <span class="hl-string">"限价挂单: 方向/币种/价格/金额"</span>),
+    Tool(<span class="hl-string">"close_position"</span>, client.close,         <span class="hl-string">"平仓: 币种/比例"</span>),
+    Tool(<span class="hl-string">"get_positions"</span>,  client.positions,     <span class="hl-string">"查询当前所有持仓"</span>),
+    Tool(<span class="hl-string">"get_price"</span>,      client.ticker,        <span class="hl-string">"查询实时价格"</span>),
+    Tool(<span class="hl-string">"get_balance"</span>,    client.balance,       <span class="hl-string">"查询账户余额"</span>),
+    Tool(<span class="hl-string">"set_tp_sl"</span>,      client.set_tp_sl,     <span class="hl-string">"设置止盈止损"</span>),
+]
+
+<span class="hl-comment"># 创建 AI Agent（支持自然语言交互）</span>
+agent = Agent(
+    name=<span class="hl-string">"1024EX_Trader"</span>,
+    model=<span class="hl-string">"claude-sonnet-4-6"</span>,
+    tools=tools,
+    system_prompt=<span class="hl-string">"""你是 1024EX 链上交易助手。
+    用户通过 IM 发来交易指令，你负责：
+    1. 解析意图（开仓/平仓/查询/分析）
+    2. 确认关键参数（方向/金额/杠杆）
+    3. 执行交易并返回结果
+    高风险操作（大额/高杠杆）需二次确认。"""</span>
+)
+</pre></div>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <span class="code-lang">bot.py — Telegram Bot 接入</span>
+      </div>
+      <div class="code-body"><pre>
+<span class="hl-keyword">from</span> telegram.ext <span class="hl-keyword">import</span> Application, MessageHandler, filters
+
+<span class="hl-keyword">async def</span> <span class="hl-func">handle_message</span>(update, context):
+    <span class="hl-comment"># 用户的 IM 消息 → Agent 处理 → 返回结果</span>
+    user_msg = update.message.text
+    result = <span class="hl-keyword">await</span> agent.run(user_msg)
+    <span class="hl-keyword">await</span> update.message.reply_text(result)
+
+<span class="hl-comment"># 启动 Telegram Bot</span>
+app = Application.builder().token(<span class="hl-string">"TG_BOT_TOKEN"</span>).build()
+app.add_handler(MessageHandler(filters.TEXT, handle_message))
+app.run_polling()
+</pre></div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ===== Supported IM Platforms ===== -->
+<section class="section" id="platforms">
+  <div class="section-header fade-up">
+    <div class="section-label blue">IM PLATFORMS</div>
+    <h2>支持的 IM 平台</h2>
+    <p>在你最常用的聊天工具里直接交易</p>
+  </div>
+
+  <div class="platform-grid fade-up">
+    <div class="platform-card">
+      <div class="platform-icon">✈️</div>
+      <h3>Telegram</h3>
+      <p>最主流的 Crypto 社区工具，Bot API 成熟稳定</p>
+      <span class="platform-tag ready">推荐接入</span>
+    </div>
+    <div class="platform-card">
+      <div class="platform-icon">🎮</div>
+      <h3>Discord</h3>
+      <p>支持 Slash Commands，适合社区共享策略</p>
+      <span class="platform-tag ready">推荐接入</span>
+    </div>
+    <div class="platform-card">
+      <div class="platform-icon">💬</div>
+      <h3>微信 / 企业微信</h3>
+      <p>中文用户主力 IM，通过 webhook 或企微 API 接入</p>
+      <span class="platform-tag ready">可接入</span>
+    </div>
+    <div class="platform-card">
+      <div class="platform-icon">🔔</div>
+      <h3>Slack</h3>
+      <p>团队协作场景，适合量化团队内部使用</p>
+      <span class="platform-tag ready">可接入</span>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ===== Use Cases ===== -->
+<section class="section" id="usecases">
+  <div class="section-header fade-up">
+    <div class="section-label green">USE CASES</div>
+    <h2>Agent 能帮你做什么</h2>
+    <p>不只是下单工具，是你的 7×24 交易搭档</p>
+  </div>
+
+  <div class="usecase-grid fade-up">
+    <div class="usecase-card">
+      <div class="usecase-icon">⚡</div>
+      <h3>闪电下单</h3>
+      <p>一条消息完成开仓，不用打开网页、找交易对、输参数。"做多 BTC 100u 10x" 发出去就搞定</p>
+      <div class="usecase-tags">
+        <span class="usecase-tag">省时</span>
+        <span class="usecase-tag">移动端友好</span>
+      </div>
+    </div>
+
+    <div class="usecase-card">
+      <div class="usecase-icon">🛡️</div>
+      <h3>智能风控</h3>
+      <p>Agent 7×24 监控你的仓位，浮亏超阈值自动告警，极端行情自动减仓保护本金</p>
+      <div class="usecase-tags">
+        <span class="usecase-tag">自动止损</span>
+        <span class="usecase-tag">告警推送</span>
+      </div>
+    </div>
+
+    <div class="usecase-card">
+      <div class="usecase-icon">📊</div>
+      <h3>行情播报</h3>
+      <p>定时推送关注币种的价格变动、资金费率异常、大额清算事件，不错过任何机会</p>
+      <div class="usecase-tags">
+        <span class="usecase-tag">定时推送</span>
+        <span class="usecase-tag">异常检测</span>
+      </div>
+    </div>
+
+    <div class="usecase-card">
+      <div class="usecase-icon">🔄</div>
+      <h3>自动化策略</h3>
+      <p>网格交易、定投、均线突破……用自然语言描述策略，Agent 帮你 7×24 自动执行</p>
+      <div class="usecase-tags">
+        <span class="usecase-tag">网格</span>
+        <span class="usecase-tag">DCA</span>
+        <span class="usecase-tag">趋势跟踪</span>
+      </div>
+    </div>
+
+    <div class="usecase-card">
+      <div class="usecase-icon">👥</div>
+      <h3>群组协作</h3>
+      <p>在 Discord / Telegram 群里共享信号、同步操作。KOL 发信号，群友一键跟单</p>
+      <div class="usecase-tags">
+        <span class="usecase-tag">社交交易</span>
+        <span class="usecase-tag">跟单</span>
+      </div>
+    </div>
+
+    <div class="usecase-card">
+      <div class="usecase-icon">📈</div>
+      <h3>交易复盘</h3>
+      <p>"上周的交易表现怎么样？" 一句话生成盈亏报告、胜率分析、最大回撤统计</p>
+      <div class="usecase-tags">
+        <span class="usecase-tag">数据分析</span>
+        <span class="usecase-tag">可视化报告</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ===== Safety ===== -->
+<section class="section" id="safety">
+  <div class="section-header fade-up">
+    <div class="section-label purple">SAFETY</div>
+    <h2>安全机制</h2>
+    <p>让 AI 替你交易，但绝不让它替你承担不该有的风险</p>
+  </div>
+
+  <div class="safety-grid fade-up">
+    <div class="safety-card">
+      <div class="safety-icon">🔐</div>
+      <div>
+        <h4>API 权限隔离</h4>
+        <p>可创建只读 / 只交易 / 不可提币的 API Key，最小权限原则</p>
+      </div>
+    </div>
+    <div class="safety-card">
+      <div class="safety-icon">⚠️</div>
+      <div>
+        <h4>高风险二次确认</h4>
+        <p>大额订单、高杠杆、全仓平仓等操作，Agent 会要求用户二次确认</p>
+      </div>
+    </div>
+    <div class="safety-card">
+      <div class="safety-icon">📏</div>
+      <div>
+        <h4>单笔限额</h4>
+        <p>可设置单笔最大下单金额和每日最大交易额度，防止 Agent 失控</p>
+      </div>
+    </div>
+    <div class="safety-card">
+      <div class="safety-icon">🆔</div>
+      <div>
+        <h4>用户绑定</h4>
+        <p>Bot 绑定 IM 账号白名单，只响应授权用户指令，防止越权操作</p>
+      </div>
+    </div>
+    <div class="safety-card">
+      <div class="safety-icon">📝</div>
+      <div>
+        <h4>操作日志</h4>
+        <p>所有 Agent 操作完整记录，链上可查，便于审计和复盘</p>
+      </div>
+    </div>
+    <div class="safety-card">
+      <div class="safety-icon">🛑</div>
+      <div>
+        <h4>紧急熔断</h4>
+        <p>发送 /stop 立即冻结 Agent 所有操作，一键暂停全部自动交易</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== CTA ===== -->
+<section class="cta-section fade-up">
+  <h2>让 AI Agent 替你 7×24 盯盘交易</h2>
+  <p>一条消息，就是一笔交易</p>
+  <div class="cta-buttons">
+    <a href="https://www.1024ex.com" target="_blank" class="btn btn-green">
+      开始接入 1024EX API
+    </a>
+    <a href="./index.html" class="btn btn-ghost">
+      查看新手引导
+    </a>
+  </div>
+</section>
+
+<script>
+  // ===== Intersection Observer =====
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) entry.target.classList.add('visible');
+    });
+  }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+  document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+
+  // ===== Chat Demo Animation =====
+  const chatData = [
+    { type: 'user', text: '/price BTC', delay: 800 },
+    { type: 'bot',  text: '📊 <b>BTC/USD</b> 实时价格\n\n当前价: <code>$67,432.50</code>\n24h 涨跌: <span class="profit">+2.34%</span>\n24h 高/低: $68,100 / $65,800\n资金费率: 0.0045%', delay: 1200 },
+    { type: 'user', text: '帮我用 200u 10倍杠杆做多 BTC', delay: 2000 },
+    { type: 'bot',  text: '🔍 <b>订单确认</b>\n\n方向: <span class="profit">Long 做多</span>\n币种: BTC/USD\n保证金: 200 USDC\n杠杆: 10x\n仓位价值: 2,000 USDC\n预估开仓价: $67,432\n预估强平价: $60,780\n手续费: ~0.6 USDC\n\n<span class="warn">⚠ 10x 杠杆，价格下跌 ~9.8% 将触发强平</span>\n\n确认执行？回复 <code>Y</code> 或 <code>N</code>', delay: 1500 },
+    { type: 'user', text: 'Y', delay: 1000 },
+    { type: 'bot',  text: '✅ <b>开仓成功!</b>\n\nBTC/USD Long 10x\n开仓价: $67,430.20\n仓位: 2,000 USDC\n保证金: 200 USDC\n\n已自动设置:\n止损: $61,000 (-9.5%)\n\n💡 发送 <code>/tp BTC 72000</code> 设置止盈', delay: 1200 },
+    { type: 'user', text: '/positions', delay: 2000 },
+    { type: 'bot',  text: '📋 <b>当前持仓 (1)</b>\n\n┌ BTC/USD <span class="profit">LONG 10x</span>\n│ 开仓价: $67,430.20\n│ 当前价: $67,580.00\n│ 未实现盈亏: <span class="profit">+$4.44 (+2.22%)</span>\n│ 强平价: $60,780\n│ 止损: $61,000 | 止盈: 未设置\n└ 持仓时间: 3分钟\n\n总账户余额: 1,200.00 USDC\n可用保证金: 1,000.00 USDC', delay: 1300 },
+  ];
+
+  const chatContainer = document.getElementById('chatMessages');
+  let msgIndex = 0;
+
+  function addMessage() {
+    if (msgIndex >= chatData.length) {
+      // Reset after a pause
+      setTimeout(() => {
+        chatContainer.innerHTML = '';
+        msgIndex = 0;
+        addMessage();
+      }, 5000);
+      return;
+    }
+
+    const data = chatData[msgIndex];
+    const div = document.createElement('div');
+    div.className = `msg ${data.type}`;
+    div.innerHTML = data.text.replace(/\n/g, '<br>');
+    chatContainer.appendChild(div);
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+    msgIndex++;
+
+    setTimeout(addMessage, data.delay);
+  }
+
+  // Start chat when section is visible
+  const chatObserver = new IntersectionObserver((entries) => {
+    if (entries[0].isIntersecting) {
+      addMessage();
+      chatObserver.disconnect();
+    }
+  }, { threshold: 0.3 });
+
+  chatObserver.observe(document.getElementById('chatDemo'));
+</script>
+
+</body>
+</html>
