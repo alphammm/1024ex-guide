@@ -1,1126 +1,1432 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>1024EX 新手引导 - 链上永续合约 DEX</title>
-  <style>
-    :root {
-      --primary: #6C5CE7;
-      --primary-light: #A29BFE;
-      --accent: #00CEC9;
-      --accent-glow: rgba(0, 206, 201, 0.3);
-      --bg-dark: #0A0B1A;
-      --bg-card: #12132A;
-      --bg-card-hover: #1A1B3A;
-      --text: #E8E8F0;
-      --text-dim: #8B8BA3;
-      --border: #2A2B4A;
-      --success: #00B894;
-      --warning: #FDCB6E;
-      --danger: #E17055;
-    }
-
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Noto Sans SC', sans-serif;
-      background: var(--bg-dark);
-      color: var(--text);
-      line-height: 1.7;
-      overflow-x: hidden;
-    }
-
-    /* ===== Hero Section ===== */
-    .hero {
-      position: relative;
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      padding: 2rem;
-      overflow: hidden;
-    }
-
-    .hero::before {
-      content: '';
-      position: absolute;
-      top: -50%;
-      left: -50%;
-      width: 200%;
-      height: 200%;
-      background: radial-gradient(ellipse at 30% 50%, rgba(108, 92, 231, 0.15) 0%, transparent 50%),
-                  radial-gradient(ellipse at 70% 50%, rgba(0, 206, 201, 0.1) 0%, transparent 50%);
-      animation: bgFloat 20s ease-in-out infinite;
-    }
-
-    @keyframes bgFloat {
-      0%, 100% { transform: translate(0, 0); }
-      50% { transform: translate(-3%, 3%); }
-    }
-
-    .hero-content {
-      position: relative;
-      z-index: 1;
-      max-width: 800px;
-    }
-
-    .hero-badge {
-      display: inline-block;
-      padding: 6px 18px;
-      background: rgba(108, 92, 231, 0.2);
-      border: 1px solid var(--primary);
-      border-radius: 100px;
-      font-size: 0.85rem;
-      color: var(--primary-light);
-      margin-bottom: 1.5rem;
-      letter-spacing: 1px;
-    }
-
-    .hero h1 {
-      font-size: clamp(2.5rem, 6vw, 4rem);
-      font-weight: 800;
-      margin-bottom: 1rem;
-      background: linear-gradient(135deg, #fff 0%, var(--accent) 50%, var(--primary-light) 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-
-    .hero p {
-      font-size: 1.2rem;
-      color: var(--text-dim);
-      margin-bottom: 2.5rem;
-      max-width: 600px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-
-    .hero-cta {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      padding: 14px 36px;
-      background: linear-gradient(135deg, var(--primary), var(--accent));
-      color: #fff;
-      text-decoration: none;
-      border-radius: 12px;
-      font-size: 1.1rem;
-      font-weight: 600;
-      transition: all 0.3s;
-      cursor: pointer;
-      border: none;
-      box-shadow: 0 4px 24px rgba(108, 92, 231, 0.4);
-    }
-
-    .hero-cta:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 32px rgba(108, 92, 231, 0.6);
-    }
-
-    .scroll-hint {
-      position: absolute;
-      bottom: 2rem;
-      left: 50%;
-      transform: translateX(-50%);
-      animation: bounce 2s infinite;
-      color: var(--text-dim);
-      font-size: 0.85rem;
-    }
-
-    .scroll-hint svg {
-      display: block;
-      margin: 6px auto 0;
-    }
-
-    @keyframes bounce {
-      0%, 100% { transform: translateX(-50%) translateY(0); }
-      50% { transform: translateX(-50%) translateY(8px); }
-    }
-
-    /* ===== Navigation Dots ===== */
-    .nav-dots {
-      position: fixed;
-      right: 24px;
-      top: 50%;
-      transform: translateY(-50%);
-      z-index: 100;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    .nav-dot {
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
-      background: var(--border);
-      cursor: pointer;
-      transition: all 0.3s;
-      position: relative;
-    }
-
-    .nav-dot.active {
-      background: var(--accent);
-      box-shadow: 0 0 12px var(--accent-glow);
-    }
-
-    .nav-dot::after {
-      content: attr(data-label);
-      position: absolute;
-      right: 24px;
-      top: 50%;
-      transform: translateY(-50%);
-      white-space: nowrap;
-      font-size: 0.75rem;
-      color: var(--text-dim);
-      opacity: 0;
-      transition: opacity 0.3s;
-      pointer-events: none;
-    }
-
-    .nav-dot:hover::after {
-      opacity: 1;
-    }
-
-    /* ===== Section Common ===== */
-    .section {
-      padding: 100px 2rem;
-      max-width: 1100px;
-      margin: 0 auto;
-    }
-
-    .section-header {
-      text-align: center;
-      margin-bottom: 4rem;
-    }
-
-    .section-step {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 4px 16px;
-      background: rgba(0, 206, 201, 0.1);
-      border: 1px solid rgba(0, 206, 201, 0.3);
-      border-radius: 100px;
-      font-size: 0.8rem;
-      color: var(--accent);
-      margin-bottom: 1rem;
-      font-weight: 600;
-    }
-
-    .section-header h2 {
-      font-size: 2.2rem;
-      font-weight: 700;
-      margin-bottom: 0.8rem;
-    }
-
-    .section-header p {
-      color: var(--text-dim);
-      font-size: 1.05rem;
-      max-width: 600px;
-      margin: 0 auto;
-    }
-
-    /* ===== Step Cards ===== */
-    .step-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 1.5rem;
-    }
-
-    .step-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 2rem;
-      transition: all 0.3s;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .step-card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 3px;
-      background: linear-gradient(90deg, var(--primary), var(--accent));
-      opacity: 0;
-      transition: opacity 0.3s;
-    }
-
-    .step-card:hover {
-      background: var(--bg-card-hover);
-      border-color: var(--primary);
-      transform: translateY(-4px);
-    }
-
-    .step-card:hover::before {
-      opacity: 1;
-    }
-
-    .card-icon {
-      width: 56px;
-      height: 56px;
-      border-radius: 14px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.6rem;
-      margin-bottom: 1.2rem;
-    }
-
-    .card-icon.purple { background: rgba(108, 92, 231, 0.15); }
-    .card-icon.teal { background: rgba(0, 206, 201, 0.15); }
-    .card-icon.orange { background: rgba(225, 112, 85, 0.15); }
-    .card-icon.green { background: rgba(0, 184, 148, 0.15); }
-    .card-icon.yellow { background: rgba(253, 203, 110, 0.15); }
-    .card-icon.blue { background: rgba(116, 185, 255, 0.15); }
-
-    .step-card h3 {
-      font-size: 1.2rem;
-      margin-bottom: 0.6rem;
-    }
-
-    .step-card p {
-      color: var(--text-dim);
-      font-size: 0.95rem;
-    }
-
-    /* ===== Wallet Section ===== */
-    .wallet-options {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 1rem;
-      margin-top: 2rem;
-    }
-
-    .wallet-item {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      padding: 1.2rem 1.5rem;
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      transition: all 0.3s;
-      cursor: default;
-    }
-
-    .wallet-item:hover {
-      border-color: var(--primary);
-      background: var(--bg-card-hover);
-    }
-
-    .wallet-icon {
-      width: 42px;
-      height: 42px;
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.4rem;
-      background: rgba(108, 92, 231, 0.12);
-    }
-
-    .wallet-item h4 {
-      font-size: 1rem;
-      margin-bottom: 2px;
-    }
-
-    .wallet-item span {
-      font-size: 0.8rem;
-      color: var(--text-dim);
-    }
-
-    /* ===== Trading Flow ===== */
-    .flow-container {
-      display: flex;
-      flex-direction: column;
-      gap: 0;
-      position: relative;
-    }
-
-    .flow-line {
-      position: absolute;
-      left: 28px;
-      top: 40px;
-      bottom: 40px;
-      width: 2px;
-      background: linear-gradient(to bottom, var(--primary), var(--accent));
-      opacity: 0.3;
-    }
-
-    .flow-step {
-      display: flex;
-      gap: 1.5rem;
-      padding: 1.5rem 0;
-      position: relative;
-      z-index: 1;
-    }
-
-    .flow-number {
-      width: 56px;
-      height: 56px;
-      min-width: 56px;
-      border-radius: 50%;
-      background: var(--bg-card);
-      border: 2px solid var(--primary);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.2rem;
-      font-weight: 700;
-      color: var(--primary-light);
-    }
-
-    .flow-content {
-      flex: 1;
-      padding-top: 6px;
-    }
-
-    .flow-content h3 {
-      font-size: 1.15rem;
-      margin-bottom: 0.5rem;
-    }
-
-    .flow-content p {
-      color: var(--text-dim);
-      font-size: 0.95rem;
-    }
-
-    .flow-tag {
-      display: inline-block;
-      padding: 3px 10px;
-      background: rgba(0, 206, 201, 0.12);
-      border-radius: 6px;
-      font-size: 0.8rem;
-      color: var(--accent);
-      margin-top: 8px;
-    }
-
-    /* ===== Features Grid ===== */
-    .features-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 1.5rem;
-    }
-
-    .feature-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 2rem;
-      text-align: center;
-      transition: all 0.3s;
-    }
-
-    .feature-card:hover {
-      transform: translateY(-4px);
-      border-color: var(--accent);
-    }
-
-    .feature-emoji {
-      font-size: 2.4rem;
-      margin-bottom: 1rem;
-      display: block;
-    }
-
-    .feature-card h3 {
-      font-size: 1.1rem;
-      margin-bottom: 0.5rem;
-    }
-
-    .feature-card p {
-      color: var(--text-dim);
-      font-size: 0.9rem;
-    }
-
-    /* ===== Risk Warning ===== */
-    .risk-section {
-      background: linear-gradient(135deg, rgba(225, 112, 85, 0.08), rgba(253, 203, 110, 0.05));
-      border: 1px solid rgba(225, 112, 85, 0.25);
-      border-radius: 20px;
-      padding: 3rem;
-      margin: 2rem auto;
-      max-width: 900px;
-    }
-
-    .risk-section h3 {
-      color: var(--warning);
-      font-size: 1.3rem;
-      margin-bottom: 1.2rem;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .risk-list {
-      list-style: none;
-      display: grid;
-      gap: 0.8rem;
-    }
-
-    .risk-list li {
-      display: flex;
-      align-items: flex-start;
-      gap: 10px;
-      color: var(--text-dim);
-      font-size: 0.95rem;
-    }
-
-    .risk-list li::before {
-      content: '!';
-      min-width: 22px;
-      height: 22px;
-      border-radius: 50%;
-      background: rgba(225, 112, 85, 0.2);
-      color: var(--danger);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.75rem;
-      font-weight: 700;
-      margin-top: 2px;
-    }
-
-    /* ===== Glossary ===== */
-    .glossary-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 1rem;
-    }
-
-    .glossary-item {
-      padding: 1.2rem 1.5rem;
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      transition: all 0.3s;
-    }
-
-    .glossary-item:hover {
-      border-color: var(--primary);
-    }
-
-    .glossary-item dt {
-      font-weight: 600;
-      color: var(--accent);
-      margin-bottom: 4px;
-      font-size: 0.95rem;
-    }
-
-    .glossary-item dd {
-      color: var(--text-dim);
-      font-size: 0.9rem;
-    }
-
-    /* ===== FAQ ===== */
-    .faq-list {
-      display: flex;
-      flex-direction: column;
-      gap: 0.8rem;
-      max-width: 800px;
-      margin: 0 auto;
-    }
-
-    .faq-item {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      overflow: hidden;
-      transition: border-color 0.3s;
-    }
-
-    .faq-item.active {
-      border-color: var(--primary);
-    }
-
-    .faq-question {
-      padding: 1.2rem 1.5rem;
-      cursor: pointer;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-weight: 600;
-      font-size: 1rem;
-      user-select: none;
-    }
-
-    .faq-question:hover {
-      color: var(--accent);
-    }
-
-    .faq-arrow {
-      transition: transform 0.3s;
-      color: var(--text-dim);
-    }
-
-    .faq-item.active .faq-arrow {
-      transform: rotate(180deg);
-    }
-
-    .faq-answer {
-      max-height: 0;
-      overflow: hidden;
-      transition: max-height 0.4s ease;
-    }
-
-    .faq-answer-inner {
-      padding: 0 1.5rem 1.2rem;
-      color: var(--text-dim);
-      font-size: 0.95rem;
-    }
-
-    /* ===== CTA Bottom ===== */
-    .cta-bottom {
-      text-align: center;
-      padding: 80px 2rem 120px;
-    }
-
-    .cta-bottom h2 {
-      font-size: 2rem;
-      margin-bottom: 1rem;
-    }
-
-    .cta-bottom p {
-      color: var(--text-dim);
-      margin-bottom: 2rem;
-      font-size: 1.05rem;
-    }
-
-    .cta-buttons {
-      display: flex;
-      gap: 1rem;
-      justify-content: center;
-      flex-wrap: wrap;
-    }
-
-    .btn-primary {
-      padding: 14px 32px;
-      background: linear-gradient(135deg, var(--primary), var(--accent));
-      color: #fff;
-      text-decoration: none;
-      border-radius: 12px;
-      font-size: 1rem;
-      font-weight: 600;
-      transition: all 0.3s;
-      border: none;
-      cursor: pointer;
-    }
-
-    .btn-primary:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 32px rgba(108, 92, 231, 0.5);
-    }
-
-    .btn-outline {
-      padding: 14px 32px;
-      background: transparent;
-      color: var(--text);
-      text-decoration: none;
-      border-radius: 12px;
-      font-size: 1rem;
-      font-weight: 600;
-      border: 1px solid var(--border);
-      transition: all 0.3s;
-      cursor: pointer;
-    }
-
-    .btn-outline:hover {
-      border-color: var(--accent);
-      color: var(--accent);
-    }
-
-    /* ===== Progress Bar ===== */
-    .progress-bar {
-      position: fixed;
-      top: 0;
-      left: 0;
-      height: 3px;
-      background: linear-gradient(90deg, var(--primary), var(--accent));
-      z-index: 200;
-      transition: width 0.1s;
-    }
-
-    /* ===== Animations ===== */
-    .fade-up {
-      opacity: 0;
-      transform: translateY(30px);
-      transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    .fade-up.visible {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    /* ===== Responsive ===== */
-    @media (max-width: 768px) {
-      .features-grid {
-        grid-template-columns: 1fr;
-      }
-      .nav-dots { display: none; }
-      .risk-section { padding: 2rem 1.5rem; }
-      .section { padding: 60px 1.2rem; }
-    }
-
-    @media (max-width: 480px) {
-      .step-grid {
-        grid-template-columns: 1fr;
-      }
-      .wallet-options {
-        grid-template-columns: 1fr;
-      }
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>1024EX · Let Algorithms Trade Freely On-Chain</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-primary: #0a0b0f;
+  --bg-secondary: #12131a;
+  --bg-card: #161822;
+  --bg-card-hover: #1c1e2e;
+  --border: #1e2030;
+  --border-accent: #2a2d45;
+  --text-primary: #e8eaed;
+  --text-secondary: #8b8fa3;
+  --text-muted: #5a5e73;
+  --accent-cyan: #00d4aa;
+  --accent-cyan-dim: rgba(0, 212, 170, 0.12);
+  --accent-cyan-glow: rgba(0, 212, 170, 0.25);
+  --accent-blue: #4d8eff;
+  --accent-blue-dim: rgba(77, 142, 255, 0.12);
+  --accent-purple: #8b5cf6;
+  --accent-purple-dim: rgba(139, 92, 246, 0.12);
+  --accent-orange: #f59e0b;
+  --accent-orange-dim: rgba(245, 158, 11, 0.12);
+  --accent-red: #ef4444;
+  --accent-green: #22c55e;
+  --radius: 12px;
+  --radius-sm: 8px;
+  --radius-lg: 16px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+.mono { font-family: 'JetBrains Mono', monospace; }
+
+/* === GRID NOISE BACKGROUND === */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(0, 212, 170, 0.06), transparent),
+    radial-gradient(ellipse 60% 40% at 80% 50%, rgba(77, 142, 255, 0.04), transparent);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* === NAV === */
+nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  padding: 16px 0;
+  background: rgba(10, 11, 15, 0.85);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+}
+
+nav .inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.logo {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  color: var(--text-primary);
+}
+
+.logo span { color: var(--accent-cyan); }
+
+nav .links {
+  display: flex;
+  gap: 32px;
+  list-style: none;
+}
+
+nav .links a {
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+nav .links a:hover { color: var(--text-primary); }
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 24px;
+  background: var(--accent-cyan);
+  color: #0a0b0f;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: all 0.2s;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-primary:hover {
+  background: #00e6b8;
+  box-shadow: 0 0 24px var(--accent-cyan-glow);
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 24px;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 8px;
+  text-decoration: none;
+  border: 1px solid var(--border-accent);
+  transition: all 0.2s;
+}
+
+.btn-secondary:hover {
+  border-color: var(--accent-cyan);
+  background: var(--accent-cyan-dim);
+}
+
+/* === CONTAINER === */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 32px;
+  position: relative;
+  z-index: 1;
+}
+
+section {
+  padding: 120px 0;
+}
+
+/* === HERO === */
+.hero {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  text-align: center;
+  padding-top: 80px;
+  position: relative;
+}
+
+.hero::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(0, 212, 170, 0.08), transparent 70%);
+  pointer-events: none;
+}
+
+.hero .container { width: 100%; }
+
+.hero h1 {
+  font-size: clamp(42px, 6vw, 72px);
+  font-weight: 800;
+  letter-spacing: -2px;
+  line-height: 1.1;
+  margin-bottom: 24px;
+  background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-cyan) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero .subtitle {
+  font-size: 20px;
+  color: var(--text-secondary);
+  max-width: 640px;
+  margin: 0 auto 48px;
+  line-height: 1.7;
+}
+
+.hero .cta-group {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  margin-bottom: 80px;
+}
+
+/* === CORE LOOP === */
+.loop-visual {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  margin: 60px auto 32px;
+  max-width: 900px;
+  flex-wrap: wrap;
+}
+
+.loop-step {
+  flex: 1;
+  min-width: 180px;
+  text-align: center;
+  padding: 32px 16px;
+  position: relative;
+}
+
+.loop-step .icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  margin: 0 auto 16px;
+}
+
+.loop-step:nth-child(1) .icon { background: var(--accent-cyan-dim); }
+.loop-step:nth-child(2) .icon { background: var(--accent-blue-dim); }
+.loop-step:nth-child(3) .icon { background: var(--accent-purple-dim); }
+.loop-step:nth-child(4) .icon { background: var(--accent-orange-dim); }
+
+.loop-step h4 {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.loop-step p {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.loop-arrow {
+  font-size: 20px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+  margin-top: -30px;
+}
+
+.loop-tagline {
+  text-align: center;
+  font-size: 18px;
+  color: var(--text-secondary);
+  font-weight: 500;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.loop-tagline strong { color: var(--accent-cyan); }
+
+/* === SECTION HEADERS === */
+.section-label {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--accent-cyan);
+  margin-bottom: 16px;
+}
+
+.section-title {
+  font-size: clamp(32px, 4vw, 48px);
+  font-weight: 800;
+  letter-spacing: -1.5px;
+  margin-bottom: 16px;
+  line-height: 1.15;
+}
+
+.section-desc {
+  font-size: 18px;
+  color: var(--text-secondary);
+  max-width: 600px;
+  line-height: 1.7;
+}
+
+.section-desc.center { margin: 0 auto; }
+
+/* === PRODUCT GRID === */
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 20px;
+  margin-top: 60px;
+}
+
+.product-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 36px;
+  transition: all 0.3s;
+  position: relative;
+  overflow: hidden;
+}
+
+.product-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent-cyan), transparent);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.product-card:hover {
+  border-color: var(--border-accent);
+  background: var(--bg-card-hover);
+  transform: translateY(-2px);
+}
+
+.product-card:hover::before { opacity: 1; }
+
+.product-card .card-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  margin-bottom: 20px;
+}
+
+.product-card h3 {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  letter-spacing: -0.5px;
+}
+
+.product-card .desc {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 20px;
+  line-height: 1.7;
+}
+
+.card-features {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.card-feature {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.card-feature .dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent-cyan);
+  margin-top: 7px;
+  flex-shrink: 0;
+}
+
+.tag {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 100px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.tag-cyan { background: var(--accent-cyan-dim); color: var(--accent-cyan); }
+.tag-blue { background: var(--accent-blue-dim); color: var(--accent-blue); }
+.tag-purple { background: var(--accent-purple-dim); color: var(--accent-purple); }
+.tag-orange { background: var(--accent-orange-dim); color: var(--accent-orange); }
+
+/* === AGENTX SHOWCASE === */
+.agentx-section {
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.agentx-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+  align-items: center;
+  margin-top: 60px;
+}
+
+.agentx-terminal {
+  background: #0d0e14;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+}
+
+.terminal-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 20px;
+  background: rgba(255,255,255,0.02);
+  border-bottom: 1px solid var(--border);
+}
+
+.terminal-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.terminal-dot.red { background: #ff5f57; }
+.terminal-dot.yellow { background: #febc2e; }
+.terminal-dot.green { background: #28c840; }
+
+.terminal-title {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-left: 8px;
+}
+
+.terminal-body {
+  padding: 24px;
+  line-height: 1.8;
+}
+
+.terminal-body .line { margin-bottom: 4px; }
+.t-cyan { color: var(--accent-cyan); }
+.t-blue { color: var(--accent-blue); }
+.t-purple { color: var(--accent-purple); }
+.t-orange { color: var(--accent-orange); }
+.t-green { color: var(--accent-green); }
+.t-red { color: var(--accent-red); }
+.t-dim { color: var(--text-muted); }
+.t-white { color: var(--text-primary); }
+
+.agentx-features {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.agentx-feature {
+  display: flex;
+  gap: 16px;
+}
+
+.agentx-feature .af-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  background: var(--accent-cyan-dim);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.agentx-feature h4 {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.agentx-feature p {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+/* === COMPARISON TABLE === */
+.comparison-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin-top: 60px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+.comparison-table th,
+.comparison-table td {
+  padding: 16px 24px;
+  text-align: left;
+  font-size: 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.comparison-table th {
+  background: var(--bg-card);
+  font-weight: 600;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary);
+}
+
+.comparison-table th:nth-child(2) {
+  color: var(--accent-cyan);
+}
+
+.comparison-table td {
+  background: var(--bg-secondary);
+}
+
+.comparison-table td:nth-child(2) {
+  color: var(--accent-cyan);
+  font-weight: 500;
+}
+
+.comparison-table tr:last-child td { border-bottom: none; }
+
+/* === QUICK START === */
+.steps {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-top: 60px;
+  position: relative;
+}
+
+.steps::before {
+  content: '';
+  position: absolute;
+  left: 23px;
+  top: 48px;
+  bottom: 48px;
+  width: 2px;
+  background: linear-gradient(180deg, var(--accent-cyan), var(--accent-blue), var(--accent-purple));
+  opacity: 0.3;
+}
+
+.step {
+  display: flex;
+  gap: 32px;
+  padding: 32px 0;
+  position: relative;
+}
+
+.step-num {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--bg-card);
+  border: 2px solid var(--border-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--accent-cyan);
+  flex-shrink: 0;
+  z-index: 1;
+}
+
+.step-content h3 {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  letter-spacing: -0.3px;
+}
+
+.step-content p {
+  font-size: 15px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+
+.step-code {
+  margin-top: 16px;
+  background: #0d0e14;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 16px 20px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  color: var(--text-secondary);
+  overflow-x: auto;
+}
+
+/* === PATHS === */
+.paths-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  margin-top: 60px;
+}
+
+.path-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 36px;
+  text-align: center;
+  transition: all 0.3s;
+}
+
+.path-card:hover {
+  border-color: var(--border-accent);
+  transform: translateY(-4px);
+}
+
+.path-letter {
+  font-size: 48px;
+  font-weight: 900;
+  margin-bottom: 8px;
+  letter-spacing: -2px;
+}
+
+.path-card:nth-child(1) .path-letter { color: var(--accent-cyan); }
+.path-card:nth-child(2) .path-letter { color: var(--accent-blue); }
+.path-card:nth-child(3) .path-letter { color: var(--accent-purple); }
+
+.path-card h3 {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+
+.path-flow {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 20px;
+  line-height: 1.8;
+}
+
+.path-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  text-align: left;
+}
+
+.path-meta-item {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  padding: 8px 0;
+  border-top: 1px solid var(--border);
+}
+
+.path-meta-item .label { color: var(--text-muted); }
+.path-meta-item .value { color: var(--text-secondary); font-weight: 500; }
+
+/* === SPARKS === */
+.sparks-flow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  margin: 48px 0;
+  flex-wrap: wrap;
+}
+
+.spark-node {
+  padding: 16px 28px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.spark-arrow {
+  font-size: 18px;
+  color: var(--accent-cyan);
+  padding: 0 12px;
+}
+
+/* === FAQ === */
+.faq-list {
+  max-width: 720px;
+  margin: 60px auto 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.faq-item {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.faq-question {
+  width: 100%;
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+}
+
+.faq-question:hover { background: rgba(255,255,255,0.02); }
+
+.faq-arrow {
+  font-size: 18px;
+  color: var(--text-muted);
+  transition: transform 0.3s;
+}
+
+.faq-item.open .faq-arrow { transform: rotate(180deg); }
+
+.faq-answer {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+}
+
+.faq-answer-inner {
+  padding: 0 24px 20px;
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+
+.faq-item.open .faq-answer { max-height: 300px; }
+
+/* === ARCH === */
+.arch-diagram {
+  margin: 60px auto 0;
+  max-width: 700px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.arch-layer {
+  border: 1px solid var(--border);
+  padding: 20px 28px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.arch-layer:first-child { border-radius: var(--radius-lg) var(--radius-lg) 0 0; }
+.arch-layer:last-child { border-radius: 0 0 var(--radius-lg) var(--radius-lg); }
+.arch-layer + .arch-layer { border-top: none; }
+
+.arch-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+  width: 110px;
+  flex-shrink: 0;
+}
+
+.arch-items {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.arch-item {
+  padding: 6px 14px;
+  border-radius: 100px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.arch-layer:nth-child(1) { background: rgba(0, 212, 170, 0.04); }
+.arch-layer:nth-child(1) .arch-item { background: var(--accent-cyan-dim); color: var(--accent-cyan); }
+.arch-layer:nth-child(2) { background: rgba(77, 142, 255, 0.04); }
+.arch-layer:nth-child(2) .arch-item { background: var(--accent-blue-dim); color: var(--accent-blue); }
+.arch-layer:nth-child(3) { background: rgba(139, 92, 246, 0.04); }
+.arch-layer:nth-child(3) .arch-item { background: var(--accent-purple-dim); color: var(--accent-purple); }
+.arch-layer:nth-child(4) { background: rgba(245, 158, 11, 0.04); }
+.arch-layer:nth-child(4) .arch-item { background: var(--accent-orange-dim); color: var(--accent-orange); }
+
+/* === FOOTER CTA === */
+.footer-cta {
+  text-align: center;
+  padding: 120px 0 80px;
+  position: relative;
+}
+
+.footer-cta::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 800px;
+  height: 400px;
+  background: radial-gradient(ellipse, rgba(0, 212, 170, 0.06), transparent 70%);
+  pointer-events: none;
+}
+
+.footer-cta h2 {
+  font-size: clamp(28px, 4vw, 40px);
+  font-weight: 800;
+  letter-spacing: -1px;
+  margin-bottom: 16px;
+}
+
+.footer-cta p {
+  font-size: 18px;
+  color: var(--text-secondary);
+  margin-bottom: 40px;
+}
+
+.footer-cta .cta-group {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+}
+
+footer {
+  border-top: 1px solid var(--border);
+  padding: 40px 0;
+  text-align: center;
+}
+
+footer p {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 768px) {
+  .container { padding: 0 20px; }
+  section { padding: 80px 0; }
+  .product-grid { grid-template-columns: 1fr; }
+  .agentx-grid { grid-template-columns: 1fr; }
+  .paths-grid { grid-template-columns: 1fr; }
+  .loop-arrow { display: none; }
+  .loop-visual { gap: 8px; }
+  nav .links { display: none; }
+  .comparison-table { font-size: 12px; }
+  .comparison-table th, .comparison-table td { padding: 12px 12px; }
+  .hero .cta-group { flex-direction: column; align-items: center; }
+  .footer-cta .cta-group { flex-direction: column; align-items: center; }
+}
+</style>
 </head>
 <body>
 
-<div class="progress-bar" id="progressBar"></div>
-
-<!-- Navigation Dots -->
-<nav class="nav-dots" id="navDots">
-  <div class="nav-dot active" data-section="hero" data-label="欢迎"></div>
-  <div class="nav-dot" data-section="connect" data-label="连接钱包"></div>
-  <div class="nav-dot" data-section="deposit" data-label="充值入金"></div>
-  <div class="nav-dot" data-section="trade" data-label="开始交易"></div>
-  <div class="nav-dot" data-section="features" data-label="探索功能"></div>
-  <div class="nav-dot" data-section="glossary" data-label="术语表"></div>
-  <div class="nav-dot" data-section="faq" data-label="常见问题"></div>
+<!-- NAV -->
+<nav>
+  <div class="inner">
+    <div class="logo"><span>1024</span>EX</div>
+    <ul class="links">
+      <a href="#products">Products</a>
+      <a href="#agentx">AgentX</a>
+      <a href="#compare">Compare</a>
+      <a href="#start">Quick Start</a>
+      <a href="#faq">FAQ</a>
+    </ul>
+    <a href="https://www.1024ex.com" class="btn-primary">Start Trading →</a>
+  </div>
 </nav>
 
-<!-- ===== Hero ===== -->
-<section class="hero" id="hero">
-  <div class="hero-content">
-    <div class="hero-badge">ONCHAIN PERPETUAL DEX</div>
-    <h1>欢迎来到 1024EX</h1>
-    <p>链上永续合约去中心化交易所 —— 为算法交易者打造的公平、透明、高性能交易平台</p>
-    <button class="hero-cta" onclick="document.getElementById('connect').scrollIntoView({behavior:'smooth'})">
-      开始新手引导
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-    </button>
-  </div>
-  <div class="scroll-hint">
-    向下滚动
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 13l5 5 5-5M7 6l5 5 5-5"/></svg>
+<!-- HERO -->
+<section class="hero">
+  <div class="container">
+    <div class="section-label">The Everything Exchange</div>
+    <h1>Let Algorithms Trade<br>Freely On-Chain</h1>
+    <p class="subtitle">
+      Fair pricing. AI insights. On-chain execution.<br>
+      No hidden rules. No institutional advantages. Just better trading.
+    </p>
+    <div class="cta-group">
+      <a href="https://www.1024ex.com" class="btn-primary">Start Trading →</a>
+      <a href="#start" class="btn-secondary">Quick Start Guide</a>
+    </div>
+
+    <!-- CORE LOOP -->
+    <div class="loop-visual">
+      <div class="loop-step">
+        <div class="icon">📡</div>
+        <h4>Input Data</h4>
+        <p>News, chain signals,<br>social sentiment</p>
+      </div>
+      <div class="loop-arrow">→</div>
+      <div class="loop-step">
+        <div class="icon">🤖</div>
+        <h4>AI Analysis</h4>
+        <p>AgentX processes<br>& surfaces edges</p>
+      </div>
+      <div class="loop-arrow">→</div>
+      <div class="loop-step">
+        <div class="icon">👤</div>
+        <h4>Human Control</h4>
+        <p>You decide.<br>Approve or adjust.</p>
+      </div>
+      <div class="loop-arrow">→</div>
+      <div class="loop-step">
+        <div class="icon">⛓️</div>
+        <h4>On-Chain Execution</h4>
+        <p>Transparent.<br>Verifiable. Final.</p>
+      </div>
+    </div>
+    <p class="loop-tagline">
+      <strong>Your judgment.</strong> AgentX's speed. <strong>The chain's truth.</strong>
+    </p>
   </div>
 </section>
 
-<!-- ===== Step 1: Connect Wallet ===== -->
-<section class="section" id="connect">
-  <div class="section-header fade-up">
-    <div class="section-step">STEP 1</div>
-    <h2>连接你的钱包</h2>
-    <p>1024EX 是去中心化交易所，无需注册账号，直接用钱包登录即可开始交易</p>
-  </div>
+<!-- PRODUCTS -->
+<section id="products">
+  <div class="container">
+    <div class="section-label">Product Matrix</div>
+    <h2 class="section-title">Everything You Need.<br>One Interface.</h2>
+    <p class="section-desc">Perpetuals, prediction markets, options, funds, championships — connected by AI, settled on-chain.</p>
 
-  <div class="step-grid fade-up">
-    <div class="step-card">
-      <div class="card-icon purple">1</div>
-      <h3>访问 1024EX</h3>
-      <p>打开浏览器，访问 <strong>www.1024ex.com</strong>，点击页面右上角的 <strong>"Connect Wallet"</strong> 按钮</p>
-    </div>
-    <div class="step-card">
-      <div class="card-icon teal">2</div>
-      <h3>选择钱包</h3>
-      <p>在弹出窗口中选择你使用的钱包类型，确认授权连接请求</p>
-    </div>
-    <div class="step-card">
-      <div class="card-icon green">3</div>
-      <h3>签名验证</h3>
-      <p>钱包会弹出签名请求，确认签名后即完成登录，不会消耗 Gas</p>
-    </div>
-  </div>
+    <div class="product-grid">
 
-  <div class="fade-up">
-    <h3 style="text-align:center; margin-top:3rem; margin-bottom:0.5rem; color:var(--text-dim); font-size:1rem;">支持的钱包</h3>
-    <div class="wallet-options">
-      <div class="wallet-item">
-        <div class="wallet-icon">🦊</div>
-        <div>
-          <h4>MetaMask</h4>
-          <span>最主流的浏览器钱包</span>
+      <!-- Perpetuals -->
+      <div class="product-card">
+        <div class="card-icon" style="background: var(--accent-cyan-dim);">⚡</div>
+        <span class="tag tag-cyan">Core</span>
+        <h3>Perpetual Trading</h3>
+        <p class="desc">Leverage long/short on 50+ assets with institutional-grade order types. Zero-signature execution via relayer.</p>
+        <div class="card-features">
+          <div class="card-feature"><span class="dot"></span><span>Isolated & Cross margin per sub-account</span></div>
+          <div class="card-feature"><span class="dot"></span><span>TWAP · Scale · Trailing Stop · OCO · Bracket · Iceberg · VWAP · Sniper</span></div>
+          <div class="card-feature"><span class="dot"></span><span>Unlimited sub-accounts, zero-gas internal transfers</span></div>
         </div>
       </div>
-      <div class="wallet-item">
-        <div class="wallet-icon">🌈</div>
-        <div>
-          <h4>Rainbow</h4>
-          <span>简洁易用的移动钱包</span>
+
+      <!-- Prediction -->
+      <div class="product-card">
+        <div class="card-icon" style="background: var(--accent-blue-dim);">🎯</div>
+        <span class="tag tag-blue">Markets</span>
+        <h3>Prediction Markets</h3>
+        <p class="desc">Trade the future. Binary YES/NO on elections, crypto, macro, tech, sports — anything resolvable.</p>
+        <div class="card-features">
+          <div class="card-feature"><span class="dot"></span><span>1 USDC = 1 YES + 1 NO (complete set minting)</span></div>
+          <div class="card-feature"><span class="dot"></span><span>Full limit order book with GTC / Day / IOC</span></div>
+          <div class="card-feature"><span class="dot"></span><span>AgentX cross-references news + chain data for edges</span></div>
         </div>
       </div>
-      <div class="wallet-item">
-        <div class="wallet-icon">🔗</div>
-        <div>
-          <h4>WalletConnect</h4>
-          <span>扫码连接各类钱包</span>
+
+      <!-- Championship -->
+      <div class="product-card">
+        <div class="card-icon" style="background: var(--accent-orange-dim);">🏆</div>
+        <span class="tag tag-orange">Compete</span>
+        <h3>Championship</h3>
+        <p class="desc">Prove your edge. Three leagues: Exchange Traders, Prediction Masters, All Traders.</p>
+        <div class="card-features">
+          <div class="card-feature"><span class="dot"></span><span>Weekly / Monthly / Quarterly / Annual / Permanent</span></div>
+          <div class="card-feature"><span class="dot"></span><span>USDC prizes + exclusive badges + leaderboard fame</span></div>
+          <div class="card-feature"><span class="dot"></span><span>Real-time rankings, global competition</span></div>
         </div>
       </div>
-      <div class="wallet-item">
-        <div class="wallet-icon">💰</div>
-        <div>
-          <h4>Coinbase Wallet</h4>
-          <span>Coinbase 官方钱包</span>
+
+      <!-- Funds -->
+      <div class="product-card">
+        <div class="card-icon" style="background: var(--accent-purple-dim);">💰</div>
+        <span class="tag tag-purple">Invest</span>
+        <h3>Funds</h3>
+        <p class="desc">Create or invest in managed funds. Hedge fund experience, democratized and on-chain.</p>
+        <div class="card-features">
+          <div class="card-feature"><span class="dot"></span><span>Manager: set fees, build track record, attract capital</span></div>
+          <div class="card-feature"><span class="dot"></span><span>Investor: browse by APR, TVL, one-click invest</span></div>
+          <div class="card-feature"><span class="dot"></span><span>Fully transparent: on-chain NAV, auditable history</span></div>
+        </div>
+      </div>
+
+      <!-- Creator -->
+      <div class="product-card">
+        <div class="card-icon" style="background: rgba(236, 72, 153, 0.12);">🎨</div>
+        <span class="tag" style="background: rgba(236, 72, 153, 0.12); color: #ec4899;">Create</span>
+        <h3>Creator Center & Studio</h3>
+        <p class="desc">Monetize your market insights. Publish, stream, build audience, earn.</p>
+        <div class="card-features">
+          <div class="card-feature"><span class="dot"></span><span>Articles, analysis, live streams, trade journals</span></div>
+          <div class="card-feature"><span class="dot"></span><span>Follower analytics, engagement tracking, 30-day trends</span></div>
+          <div class="card-feature"><span class="dot"></span><span>Studio: live streaming for real-time trading broadcasts</span></div>
+        </div>
+      </div>
+
+      <!-- Bridge -->
+      <div class="product-card">
+        <div class="card-icon" style="background: var(--accent-cyan-dim);">🔗</div>
+        <span class="tag tag-cyan">Infra</span>
+        <h3>Cross-Chain Bridge</h3>
+        <p class="desc">Bring assets from any chain. All settle to 1024Chain USDC.</p>
+        <div class="card-features">
+          <div class="card-feature"><span class="dot"></span><span>Arbitrum (EVM) + Solana (SVM)</span></div>
+          <div class="card-feature"><span class="dot"></span><span>5-15 minute typical settlement</span></div>
+          <div class="card-feature"><span class="dot"></span><span>LP rewards for bridge liquidity providers</span></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- AGENTX -->
+<section class="agentx-section" id="agentx">
+  <div class="container">
+    <div class="section-label">AI Copilot</div>
+    <h2 class="section-title">Meet AgentX</h2>
+    <p class="section-desc">Not a chatbot. A proactive trading copilot that monitors, analyzes, and acts — with your approval.</p>
+
+    <div class="agentx-grid">
+      <div class="agentx-terminal">
+        <div class="terminal-header">
+          <span class="terminal-dot red"></span>
+          <span class="terminal-dot yellow"></span>
+          <span class="terminal-dot green"></span>
+          <span class="terminal-title">AgentX · Live</span>
+        </div>
+        <div class="terminal-body">
+          <div class="line"><span class="t-cyan">▶</span> <span class="t-dim">AgentX Thinking...</span></div>
+          <div class="line">&nbsp;</div>
+          <div class="line"><span class="t-blue">📡</span> <span class="t-white">Detected:</span> <span class="t-orange">Fed minutes leaked early</span></div>
+          <div class="line"><span class="t-blue">📊</span> <span class="t-white">Impact:</span> 3 prediction markets mispriced</div>
+          <div class="line"><span class="t-blue">🎯</span> <span class="t-white">Edge:</span> <span class="t-green">"Rate Hold"</span> at <span class="t-red">34¢</span>, fair value <span class="t-green">~72¢</span></div>
+          <div class="line"><span class="t-blue">⚠️</span> <span class="t-white">Risk:</span> BTC-PERP long has 2.3x correlation</div>
+          <div class="line">&nbsp;</div>
+          <div class="line"><span class="t-cyan">Recommendation:</span></div>
+          <div class="line"><span class="t-dim">  →</span> Buy YES on "Fed Holds" <span class="t-green">(edge: +38¢)</span></div>
+          <div class="line"><span class="t-dim">  →</span> Reduce BTC-PERP by 30% <span class="t-orange">(hedge)</span></div>
+          <div class="line">&nbsp;</div>
+          <div class="line" style="display:flex;gap:12px;">
+            <span style="background:var(--accent-cyan);color:#0a0b0f;padding:4px 16px;border-radius:4px;font-weight:600;">Approve</span>
+            <span style="border:1px solid var(--border-accent);padding:4px 16px;border-radius:4px;color:var(--text-secondary);">Modify</span>
+            <span style="border:1px solid var(--border-accent);padding:4px 16px;border-radius:4px;color:var(--text-muted);">Dismiss</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="agentx-features">
+        <div class="agentx-feature">
+          <div class="af-icon">📡</div>
+          <div>
+            <h4>Market Analysis</h4>
+            <p>Real-time signal processing across news, chain data, and social sentiment. Multi-source, multi-language.</p>
+          </div>
+        </div>
+        <div class="agentx-feature">
+          <div class="af-icon">🛡️</div>
+          <div>
+            <h4>Position Monitoring</h4>
+            <p>Watches all positions 24/7. Alerts on risk events, liquidation proximity, and correlation shifts.</p>
+          </div>
+        </div>
+        <div class="agentx-feature">
+          <div class="af-icon">🎯</div>
+          <div>
+            <h4>Opportunity Detection</h4>
+            <p>Surfaces arbitrage, mispricing, and edge across prediction markets and perpetuals in real-time.</p>
+          </div>
+        </div>
+        <div class="agentx-feature">
+          <div class="af-icon">🧠</div>
+          <div>
+            <h4>Context-Aware</h4>
+            <p>Understands your current page, open positions, and trading context. Recommendations are personalized.</p>
+          </div>
+        </div>
+        <div class="agentx-feature">
+          <div class="af-icon" style="background: var(--accent-purple-dim);">⚡</div>
+          <div>
+            <h4>Human Control, Machine Speed</h4>
+            <p>You approve → AgentX executes. Never autonomous. Always your call, at machine latency.</p>
+          </div>
         </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ===== Step 2: Deposit ===== -->
-<section class="section" id="deposit">
-  <div class="section-header fade-up">
-    <div class="section-step">STEP 2</div>
-    <h2>充值 & 入金</h2>
-    <p>将资金转入 1024EX 交易账户，支持多链资产跨链桥接</p>
-  </div>
+<!-- COMPARISON -->
+<section id="compare">
+  <div class="container">
+    <div class="section-label">Why Switch</div>
+    <h2 class="section-title">1024EX vs. The Rest</h2>
+    <p class="section-desc">Same tools for every trader. No black boxes. No institutional privileges.</p>
 
-  <div class="step-grid fade-up">
-    <div class="step-card">
-      <div class="card-icon teal">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><path d="M12 2v20M2 12h20"/></svg>
-      </div>
-      <h3>直接充值</h3>
-      <p>如果你的资产已在 <strong>Arbitrum</strong> 链上，进入账户页面点击 <strong>"Deposit"</strong>，选择币种和金额，确认链上交易即可</p>
-    </div>
-    <div class="step-card">
-      <div class="card-icon purple">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--primary-light)" stroke-width="2"><path d="M4 12h16M8 8l-4 4 4 4M20 8l-4 4 4-4"/><circle cx="4" cy="12" r="1"/><circle cx="20" cy="12" r="1"/></svg>
-      </div>
-      <h3>跨链桥接 (Bridge)</h3>
-      <p>资产在其他链上？使用顶部导航栏的 <strong>"Bridge"</strong> 功能，从 Ethereum / BSC / Polygon 等链跨链转入 Arbitrum</p>
-    </div>
-    <div class="step-card">
-      <div class="card-icon orange">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--danger)" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
-      </div>
-      <h3>法币入金</h3>
-      <p>可通过第三方渠道（如交易所）购买 USDC / ETH 后转入 Arbitrum 钱包地址，再充值到 1024EX</p>
-    </div>
-  </div>
-
-  <div class="risk-section fade-up" style="margin-top:3rem;">
-    <h3>
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--warning)" stroke-width="2"><path d="M12 9v4M12 17h.01"/><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
-      充值注意事项
-    </h3>
-    <ul class="risk-list">
-      <li>请确认充值网络为 <strong>Arbitrum（Arbitrum One）</strong>，选错网络可能导致资产丢失</li>
-      <li>首次充值建议小额测试，确认到账后再转入大额资金</li>
-      <li>充值需要少量 ETH 作为 Gas 费，确保钱包内有足够 ETH</li>
-    </ul>
-  </div>
-</section>
-
-<!-- ===== Step 3: Start Trading ===== -->
-<section class="section" id="trade">
-  <div class="section-header fade-up">
-    <div class="section-step">STEP 3</div>
-    <h2>开始交易</h2>
-    <p>了解交易流程，迈出你在链上合约交易的第一步</p>
-  </div>
-
-  <div class="flow-container fade-up">
-    <div class="flow-line"></div>
-
-    <div class="flow-step">
-      <div class="flow-number">1</div>
-      <div class="flow-content">
-        <h3>选择交易对</h3>
-        <p>进入 <strong>Trade</strong> 页面，在左侧交易对列表中选择你想交易的品种，如 <strong>BTC/USD、ETH/USD</strong> 等永续合约</p>
-        <span class="flow-tag">支持 100+ 交易对</span>
-      </div>
-    </div>
-
-    <div class="flow-step">
-      <div class="flow-number">2</div>
-      <div class="flow-content">
-        <h3>选择方向 & 杠杆</h3>
-        <p><strong>Long（做多）</strong>= 看涨 / <strong>Short（做空）</strong>= 看跌。设置杠杆倍数（建议新手从 <strong>2-5x</strong> 开始）</p>
-        <span class="flow-tag">最高支持 100x 杠杆</span>
-      </div>
-    </div>
-
-    <div class="flow-step">
-      <div class="flow-number">3</div>
-      <div class="flow-content">
-        <h3>设置订单类型</h3>
-        <p><strong>Market（市价）</strong>：立即以当前价格成交 | <strong>Limit（限价）</strong>：设定价格挂单等待成交 | <strong>Stop（止损）</strong>：触发保护价执行</p>
-      </div>
-    </div>
-
-    <div class="flow-step">
-      <div class="flow-number">4</div>
-      <div class="flow-content">
-        <h3>输入保证金 & 确认</h3>
-        <p>输入你想投入的保证金金额（即本金），系统会显示预计开仓量和预估手续费。确认无误后点击提交订单</p>
-      </div>
-    </div>
-
-    <div class="flow-step">
-      <div class="flow-number">5</div>
-      <div class="flow-content">
-        <h3>管理持仓</h3>
-        <p>在 <strong>Positions</strong> 面板查看当前持仓、未实现盈亏、强平价格。可随时设置 <strong>TP（止盈）/ SL（止损）</strong>，或点击 Close 平仓</p>
-        <span class="flow-tag">所有操作链上透明可查</span>
-      </div>
-    </div>
+    <table class="comparison-table">
+      <thead>
+        <tr>
+          <th>Dimension</th>
+          <th>1024EX</th>
+          <th>CEX (Binance, etc.)</th>
+          <th>Other DEX</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Transparency</td>
+          <td>Full on-chain execution</td>
+          <td>Black box</td>
+          <td>Varies</td>
+        </tr>
+        <tr>
+          <td>AI Copilot</td>
+          <td>AgentX built-in</td>
+          <td>None / basic bots</td>
+          <td>None</td>
+        </tr>
+        <tr>
+          <td>Product Range</td>
+          <td>Perps + Prediction + Options + Funds</td>
+          <td>Wide but centralized</td>
+          <td>Usually single product</td>
+        </tr>
+        <tr>
+          <td>Order Types</td>
+          <td>12+ advanced (TWAP, Sniper...)</td>
+          <td>Basic + some advanced</td>
+          <td>Mostly AMM swaps</td>
+        </tr>
+        <tr>
+          <td>Competition</td>
+          <td>Built-in Championship</td>
+          <td>Occasional events</td>
+          <td>None</td>
+        </tr>
+        <tr>
+          <td>Creator Economy</td>
+          <td>Center + Studio + Funds</td>
+          <td>Limited copy trading</td>
+          <td>None</td>
+        </tr>
+        <tr>
+          <td>Fairness</td>
+          <td>Same tools for all</td>
+          <td>Institutional advantages</td>
+          <td>MEV concerns</td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 </section>
 
-<!-- ===== Step 4: Explore Features ===== -->
-<section class="section" id="features">
-  <div class="section-header fade-up">
-    <div class="section-step">STEP 4</div>
-    <h2>探索更多功能</h2>
-    <p>1024EX 不只是交易，还有丰富的生态功能等你发现</p>
-  </div>
+<!-- QUICK START -->
+<section id="start" style="background: var(--bg-secondary); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);">
+  <div class="container">
+    <div class="section-label">Quick Start</div>
+    <h2 class="section-title">Live in 5 Minutes</h2>
+    <p class="section-desc">From zero to trading in five steps.</p>
 
-  <div class="features-grid fade-up">
-    <div class="feature-card">
-      <span class="feature-emoji">🤖</span>
-      <h3>AgentX - AI 交易助手</h3>
-      <p>智能 AI Agent 帮助分析行情、制定策略、自动执行交易，让算法为你服务</p>
-    </div>
-    <div class="feature-card">
-      <span class="feature-emoji">🔮</span>
-      <h3>预测市场</h3>
-      <p>对未来事件进行预测和押注，如价格走势、链上事件等，参与即可获得奖励</p>
-    </div>
-    <div class="feature-card">
-      <span class="feature-emoji">🏆</span>
-      <h3>冠军赛 Championship</h3>
-      <p>参与全球交易竞赛，与顶尖交易者同台竞技，登上排行榜赢取丰厚奖金</p>
-    </div>
-    <div class="feature-card">
-      <span class="feature-emoji">📡</span>
-      <h3>API & 量化交易</h3>
-      <p>提供完整的 API 接口和文档，支持自定义量化策略接入，为专业算法交易者设计</p>
-    </div>
-    <div class="feature-card">
-      <span class="feature-emoji">💼</span>
-      <h3>基金产品 Funds</h3>
-      <p>浏览和投资交易策略基金，或创建自己的基金让他人跟投，共享收益</p>
-    </div>
-    <div class="feature-card">
-      <span class="feature-emoji">🎯</span>
-      <h3>积分 & 推荐</h3>
-      <p>交易即挖矿，累积 Points 积分。邀请好友使用推荐链接，双方均可获得奖励</p>
-    </div>
-  </div>
-</section>
-
-<!-- ===== Glossary ===== -->
-<section class="section" id="glossary">
-  <div class="section-header fade-up">
-    <div class="section-step">REFERENCE</div>
-    <h2>核心术语速查</h2>
-    <p>掌握这些概念，让你的交易更加得心应手</p>
-  </div>
-
-  <div class="glossary-grid fade-up">
-    <dl class="glossary-item">
-      <dt>永续合约 Perpetual</dt>
-      <dd>没有到期日的合约，可以一直持有。通过资金费率机制锚定现货价格</dd>
-    </dl>
-    <dl class="glossary-item">
-      <dt>杠杆 Leverage</dt>
-      <dd>放大交易仓位的工具。10x 杠杆 = 用 100U 保证金控制 1000U 的仓位</dd>
-    </dl>
-    <dl class="glossary-item">
-      <dt>保证金 Margin</dt>
-      <dd>开仓时需要抵押的资金。保证金不足时会触发强制平仓（爆仓）</dd>
-    </dl>
-    <dl class="glossary-item">
-      <dt>强平 Liquidation</dt>
-      <dd>当亏损达到一定比例，系统自动平掉仓位以防止进一步亏损</dd>
-    </dl>
-    <dl class="glossary-item">
-      <dt>资金费率 Funding Rate</dt>
-      <dd>多空双方定期支付的费用，用于使合约价格趋近现货价格</dd>
-    </dl>
-    <dl class="glossary-item">
-      <dt>止盈/止损 TP/SL</dt>
-      <dd>Take Profit / Stop Loss，预设价格自动平仓，控制风险和锁定利润</dd>
-    </dl>
-    <dl class="glossary-item">
-      <dt>滑点 Slippage</dt>
-      <dd>实际成交价格与预期价格之间的差异，流动性越好滑点越低</dd>
-    </dl>
-    <dl class="glossary-item">
-      <dt>Gas 费</dt>
-      <dd>在区块链上执行交易需要支付的网络手续费，Arbitrum 链上 Gas 费极低</dd>
-    </dl>
-  </div>
-</section>
-
-<!-- ===== FAQ ===== -->
-<section class="section" id="faq">
-  <div class="section-header fade-up">
-    <div class="section-step">FAQ</div>
-    <h2>常见问题</h2>
-    <p>新手最常遇到的问题，这里都有答案</p>
-  </div>
-
-  <div class="faq-list fade-up">
-    <div class="faq-item">
-      <div class="faq-question" onclick="toggleFaq(this)">
-        1024EX 需要 KYC（身份验证）吗？
-        <svg class="faq-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <h3>Connect & Bridge</h3>
+          <p>Connect your wallet. Bridge assets from Arbitrum or Solana. Everything settles to 1024Chain USDC.</p>
+          <div class="step-code">
+            <span class="t-dim">Any Chain</span> <span class="t-cyan">───[Bridge]───▶</span> <span class="t-white">1024Chain USDC</span> <span class="t-cyan">───▶</span> <span class="t-green">Ready</span>
+          </div>
+        </div>
       </div>
-      <div class="faq-answer">
-        <div class="faq-answer-inner">不需要。1024EX 是完全去中心化的交易所，连接钱包即可使用所有功能，无需提交任何个人信息或进行身份验证。</div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <h3>Activate AgentX</h3>
+          <p>Open AgentX from the sidebar. It immediately starts analyzing markets, your positions, and breaking news.</p>
+        </div>
       </div>
-    </div>
-
-    <div class="faq-item">
-      <div class="faq-question" onclick="toggleFaq(this)">
-        支持哪些链的资产？
-        <svg class="faq-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <h3>Choose Your Arena</h3>
+          <p>Perpetuals for leverage trading. Prediction for event betting. Funds for passive investing. Championship for competing.</p>
+        </div>
       </div>
-      <div class="faq-answer">
-        <div class="faq-answer-inner">1024EX 主要运行在 Arbitrum 链上。你可以通过内置的 Bridge 功能从 Ethereum、BSC、Polygon 等主流链跨链桥接资产到 Arbitrum。</div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <h3>Set Risk Controls</h3>
+          <p>Max position size per sub-account. Bracket Orders (entry + TP + SL in one click). AgentX risk monitoring. Start with isolated margin.</p>
+        </div>
       </div>
-    </div>
-
-    <div class="faq-item">
-      <div class="faq-question" onclick="toggleFaq(this)">
-        交易手续费是多少？
-        <svg class="faq-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
-      </div>
-      <div class="faq-answer">
-        <div class="faq-answer-inner">手续费根据交易对和订单类型有所不同。一般市价单（Taker）手续费略高于限价单（Maker）。具体费率请参考平台的 Fee Schedule 页面。持有积分或推荐活跃用户可享受手续费折扣。</div>
-      </div>
-    </div>
-
-    <div class="faq-item">
-      <div class="faq-question" onclick="toggleFaq(this)">
-        我的资金安全吗？会被黑客攻击吗？
-        <svg class="faq-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
-      </div>
-      <div class="faq-answer">
-        <div class="faq-answer-inner">1024EX 是去中心化协议，资金由智能合约托管，非人工管理。所有交易在链上公开透明可查。但请注意：DeFi 协议本身仍存在智能合约风险，建议只投入你可以承受损失的资金。</div>
-      </div>
-    </div>
-
-    <div class="faq-item">
-      <div class="faq-question" onclick="toggleFaq(this)">
-        新手应该用多大的杠杆？
-        <svg class="faq-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
-      </div>
-      <div class="faq-answer">
-        <div class="faq-answer-inner">强烈建议新手从 <strong>2x - 5x</strong> 杠杆开始。高杠杆意味着高风险，10x 杠杆下价格反向波动 10% 就会触发强平。先熟悉市场节奏，再逐步调整杠杆策略。</div>
-      </div>
-    </div>
-
-    <div class="faq-item">
-      <div class="faq-question" onclick="toggleFaq(this)">
-        如何使用 API 进行量化交易？
-        <svg class="faq-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
-      </div>
-      <div class="faq-answer">
-        <div class="faq-answer-inner">进入账户设置页面，在 API 管理中创建 API Key。1024EX 提供 REST API 和 WebSocket 接口，支持市场数据查询、订单管理、仓位管理等完整功能。详细文档可在平台的 API Docs 页面查阅。</div>
+      <div class="step">
+        <div class="step-num">5</div>
+        <div class="step-content">
+          <h3>Scale Up</h3>
+          <p>Multiple sub-accounts for strategies. Follow top traders. Launch your own Fund. Enter Championship. Earn Sparks → Points → Rewards.</p>
+        </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ===== Risk Warning ===== -->
-<section class="section" style="padding-top: 0;">
-  <div class="risk-section fade-up">
-    <h3>
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--warning)" stroke-width="2"><path d="M12 9v4M12 17h.01"/><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
-      风险提示
-    </h3>
-    <ul class="risk-list">
-      <li>永续合约交易具有高风险，杠杆会同时放大收益和亏损，请务必充分了解风险后再参与</li>
-      <li>只使用你能承受完全损失的资金进行交易，切勿借贷或使用生活必需资金</li>
-      <li>DeFi 协议存在智能合约漏洞风险，过往安全记录不代表未来安全保障</li>
-      <li>加密货币市场波动剧烈，价格可能在短时间内大幅变动</li>
-      <li>新手务必先使用小额资金熟悉平台操作，设置好止损后再逐步加大投入</li>
-    </ul>
+<!-- PATHS -->
+<section>
+  <div class="container">
+    <div class="section-label">Your Journey</div>
+    <h2 class="section-title" style="text-align:center;">Three Paths. One Platform.</h2>
+    <p class="section-desc center">Whether you're passive, active, or building — 1024EX meets you where you are.</p>
+
+    <div class="paths-grid">
+      <div class="path-card">
+        <div class="path-letter">A</div>
+        <h3>Passive Investor</h3>
+        <div class="path-flow">Bridge → Funds → Invest → Track → Earn</div>
+        <div class="path-meta">
+          <div class="path-meta-item"><span class="label">Time</span><span class="value">5 min/week</span></div>
+          <div class="path-meta-item"><span class="label">Skill</span><span class="value">None required</span></div>
+          <div class="path-meta-item"><span class="label">Like</span><span class="value">On-chain ETF</span></div>
+        </div>
+      </div>
+      <div class="path-card">
+        <div class="path-letter">B</div>
+        <h3>Active Trader</h3>
+        <div class="path-flow">Bridge → Trade → AgentX → Championship</div>
+        <div class="path-meta">
+          <div class="path-meta-item"><span class="label">Time</span><span class="value">1-4 hrs/day</span></div>
+          <div class="path-meta-item"><span class="label">Tools</span><span class="value">TWAP, Sniper, OCO</span></div>
+          <div class="path-meta-item"><span class="label">Edge</span><span class="value">AgentX + sub-accounts</span></div>
+        </div>
+      </div>
+      <div class="path-card">
+        <div class="path-letter">C</div>
+        <h3>Builder / Creator</h3>
+        <div class="path-flow">Trade → Track Record → Fund / Studio</div>
+        <div class="path-meta">
+          <div class="path-meta-item"><span class="label">Time</span><span class="value">Flexible</span></div>
+          <div class="path-meta-item"><span class="label">Revenue</span><span class="value">Fees + rewards</span></div>
+          <div class="path-meta-item"><span class="label">Build</span><span class="value">Fund or Creator channel</span></div>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
-<!-- ===== CTA Bottom ===== -->
-<section class="cta-bottom fade-up">
-  <h2>准备好开始了吗？</h2>
-  <p>连接钱包，开启你的链上永续合约交易之旅</p>
-  <div class="cta-buttons">
-    <a href="https://www.1024ex.com" target="_blank" class="btn-primary">
-      进入 1024EX 交易
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-left:4px;"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg>
-    </a>
-    <button class="btn-outline" onclick="window.scrollTo({top:0,behavior:'smooth'})">回到顶部</button>
+<!-- SPARKS -->
+<section style="background: var(--bg-secondary); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);">
+  <div class="container" style="text-align:center;">
+    <div class="section-label">Rewards</div>
+    <h2 class="section-title">Sparks & Points</h2>
+    <p class="section-desc center">Every action earns rewards. Trade, refer, create — all count.</p>
+
+    <div class="sparks-flow">
+      <div class="spark-node">Trade</div>
+      <div class="spark-arrow">→</div>
+      <div class="spark-node">Earn Sparks</div>
+      <div class="spark-arrow">→</div>
+      <div class="spark-node">Convert Weekly</div>
+      <div class="spark-arrow">→</div>
+      <div class="spark-node" style="border-color: var(--accent-cyan); color: var(--accent-cyan);">Points & Rewards</div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;max-width:600px;margin:0 auto;">
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;text-align:center;">
+        <div style="font-size:28px;font-weight:800;color:var(--accent-cyan);">+100</div>
+        <div style="font-size:13px;color:var(--text-muted);margin-top:4px;">First Login</div>
+      </div>
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;text-align:center;">
+        <div style="font-size:28px;font-weight:800;color:var(--accent-cyan);">+10</div>
+        <div style="font-size:13px;color:var(--text-muted);margin-top:4px;">Daily Login</div>
+      </div>
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;text-align:center;">
+        <div style="font-size:28px;font-weight:800;color:var(--accent-cyan);">∝</div>
+        <div style="font-size:13px;color:var(--text-muted);margin-top:4px;">Maker Volume</div>
+      </div>
+    </div>
   </div>
 </section>
+
+<!-- ARCHITECTURE -->
+<section>
+  <div class="container" style="text-align:center;">
+    <div class="section-label">Under the Hood</div>
+    <h2 class="section-title">Architecture</h2>
+    <p class="section-desc center">Four layers. One seamless experience.</p>
+
+    <div class="arch-diagram">
+      <div class="arch-layer">
+        <div class="arch-label">User Layer</div>
+        <div class="arch-items">
+          <span class="arch-item">Wallet</span>
+          <span class="arch-item">Sub-Accounts</span>
+          <span class="arch-item">Portfolio</span>
+          <span class="arch-item">AgentX</span>
+        </div>
+      </div>
+      <div class="arch-layer">
+        <div class="arch-label">Product Layer</div>
+        <div class="arch-items">
+          <span class="arch-item">Perpetuals</span>
+          <span class="arch-item">Prediction</span>
+          <span class="arch-item">Options</span>
+          <span class="arch-item">Funds</span>
+          <span class="arch-item">Championship</span>
+        </div>
+      </div>
+      <div class="arch-layer">
+        <div class="arch-label">Intelligence</div>
+        <div class="arch-items">
+          <span class="arch-item">AgentX Engine</span>
+          <span class="arch-item">Signal Processing</span>
+          <span class="arch-item">Risk Monitor</span>
+        </div>
+      </div>
+      <div class="arch-layer">
+        <div class="arch-label">Settlement</div>
+        <div class="arch-items">
+          <span class="arch-item">1024Chain</span>
+          <span class="arch-item">Relayer (0-sig)</span>
+          <span class="arch-item">Bridge (Arb/Sol)</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section id="faq" style="background: var(--bg-secondary); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);">
+  <div class="container" style="text-align:center;">
+    <div class="section-label">FAQ</div>
+    <h2 class="section-title">Common Questions</h2>
+
+    <div class="faq-list">
+      <div class="faq-item">
+        <button class="faq-question">What is 1024EX?<span class="faq-arrow">▼</span></button>
+        <div class="faq-answer"><div class="faq-answer-inner">A decentralized everything exchange. Trade perpetuals, prediction markets, options, and invest in managed funds — all on-chain, all transparent, with AgentX AI assistance.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-question">What is AgentX?<span class="faq-arrow">▼</span></button>
+        <div class="faq-answer"><div class="faq-answer-inner">Your AI trading copilot. Monitors markets 24/7, analyzes news and on-chain data, alerts you to opportunities and risks, and executes trades when you approve. A quant analyst that never sleeps.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-question">How are prediction markets different from gambling?<span class="faq-arrow">▼</span></button>
+        <div class="faq-answer"><div class="faq-answer-inner">Prediction markets are information aggregation tools. Each market's price represents the crowd's probability estimate. You profit by identifying when the crowd is wrong — and research consistently shows prediction markets outperform polls and pundits.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-question">Is my money safe?<span class="faq-arrow">▼</span></button>
+        <div class="faq-answer"><div class="faq-answer-inner">All execution happens on-chain. Assets stay in your wallet and sub-accounts at all times. 1024EX uses a relayer for gasless transactions, but settlement is always on 1024Chain. No custodial risk.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-question">What's the minimum to start?<span class="faq-arrow">▼</span></button>
+        <div class="faq-answer"><div class="faq-answer-inner">No minimum. Prediction market shares can be purchased for as little as 1 cent. Perpetuals require margin based on your position size and leverage.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-question">How do I earn without active trading?<span class="faq-arrow">▼</span></button>
+        <div class="faq-answer"><div class="faq-answer-inner">Invest in Funds (passive returns), provide Bridge liquidity (earn APY), earn Sparks by logging in daily, stake assets, or create content in Creator Center for creator rewards.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-question">What chains are supported?<span class="faq-arrow">▼</span></button>
+        <div class="faq-answer"><div class="faq-answer-inner">Arbitrum (EVM) and Solana (SVM) via the built-in Bridge. All assets convert to 1024Chain USDC for trading. Typical settlement: 5-15 minutes.</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER CTA -->
+<section class="footer-cta">
+  <div class="container">
+    <h2>Where Algorithms Trade Freely.<br>And Every Trader Gets a Fair Shot.</h2>
+    <p>Join the exchange built for the AI era.</p>
+    <div class="cta-group">
+      <a href="https://www.1024ex.com" class="btn-primary">Start Trading →</a>
+      <a href="https://www.1024ex.com" class="btn-secondary">Start Building →</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <p>© 2024-2026 1024EX. The Everything Exchange.</p>
+  </div>
+</footer>
 
 <script>
-  // ===== FAQ Toggle =====
-  function toggleFaq(el) {
-    const item = el.parentElement;
-    const answer = item.querySelector('.faq-answer');
-    const isActive = item.classList.contains('active');
+// FAQ accordion
+document.querySelectorAll('.faq-question').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const item = btn.parentElement;
+    const wasOpen = item.classList.contains('open');
+    document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+    if (!wasOpen) item.classList.add('open');
+  });
+});
 
-    // Close all
-    document.querySelectorAll('.faq-item').forEach(i => {
-      i.classList.remove('active');
-      i.querySelector('.faq-answer').style.maxHeight = '0';
-    });
-
-    // Open clicked
-    if (!isActive) {
-      item.classList.add('active');
-      answer.style.maxHeight = answer.scrollHeight + 'px';
+// Smooth reveal on scroll
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.style.opacity = '1';
+      entry.target.style.transform = 'translateY(0)';
     }
-  }
-
-  // ===== Scroll Progress Bar =====
-  window.addEventListener('scroll', () => {
-    const scrollTop = window.scrollY;
-    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-    const progress = (scrollTop / docHeight) * 100;
-    document.getElementById('progressBar').style.width = progress + '%';
   });
+}, { threshold: 0.1, rootMargin: '0px 0px -60px 0px' });
 
-  // ===== Intersection Observer for Animations =====
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('visible');
-      }
-    });
-  }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
-
-  document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
-
-  // ===== Nav Dots Active State =====
-  const sections = document.querySelectorAll('section[id]');
-  const dots = document.querySelectorAll('.nav-dot');
-
-  const sectionObserver = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        dots.forEach(dot => dot.classList.remove('active'));
-        const activeDot = document.querySelector(`.nav-dot[data-section="${entry.target.id}"]`);
-        if (activeDot) activeDot.classList.add('active');
-      }
-    });
-  }, { threshold: 0.3 });
-
-  sections.forEach(s => sectionObserver.observe(s));
-
-  // ===== Nav Dot Click =====
-  dots.forEach(dot => {
-    dot.addEventListener('click', () => {
-      const target = document.getElementById(dot.dataset.section);
-      if (target) target.scrollIntoView({ behavior: 'smooth' });
-    });
-  });
+document.querySelectorAll('.product-card, .path-card, .step, .arch-layer, .faq-item, .agentx-feature').forEach(el => {
+  el.style.opacity = '0';
+  el.style.transform = 'translateY(20px)';
+  el.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+  observer.observe(el);
+});
 </script>
 
 </body>
