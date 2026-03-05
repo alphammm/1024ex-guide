@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AgentX — 你的 AI 交易搭子 · 1024EX</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --cyan:#00d4c8;--cyan-dim:rgba(0,212,200,.12);--cyan-glow:rgba(0,212,200,.25);
+  --bg:#050510;--surface:#0b0b1e;--surface2:#10102a;
+  --border:rgba(255,255,255,.06);--border-h:rgba(0,212,200,.25);
+  --t1:#f0f0f8;--t2:#9494b8;--t3:#5a5a7a;
+  --red:#ff4d4d;--green:#00e676;--gold:#ffd600;
+  --purple:#a855f7;--purple-dim:rgba(168,85,247,.12);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Inter','Segoe UI','PingFang SC',sans-serif;
+  background:var(--bg);color:var(--t1);
+  line-height:1.7;-webkit-font-smoothing:antialiased;overflow-x:hidden;
+}
+.grid-bg{
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);
+  background-size:64px 64px;
+  mask-image:radial-gradient(ellipse 80% 60% at 50% 30%,rgba(0,0,0,.35),transparent);
+  -webkit-mask-image:radial-gradient(ellipse 80% 60% at 50% 30%,rgba(0,0,0,.35),transparent);
+}
+#dnaCanvas{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.12}
+
+/* Topbar */
+.topbar{
+  position:fixed;top:0;left:0;right:0;z-index:100;padding:0 2rem;height:56px;
+  display:flex;align-items:center;justify-content:space-between;
+  background:rgba(5,5,16,.7);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);
+}
+.logo{font-weight:800;font-size:1.1rem;letter-spacing:-.5px}
+.logo span{color:var(--cyan)}
+.logo .tag{color:var(--purple);font-size:.65rem;font-weight:600;margin-left:6px;padding:2px 6px;border-radius:3px;background:var(--purple-dim)}
+.topbar-links{display:flex;gap:1.5rem;align-items:center}
+.topbar-links a{color:var(--t2);text-decoration:none;font-size:.82rem;font-weight:500;transition:color .2s}
+.topbar-links a:hover{color:var(--cyan)}
+.btn-sm{padding:7px 18px;background:var(--cyan);color:var(--bg);border-radius:8px;font-weight:600;font-size:.82rem;text-decoration:none;transition:all .2s}
+.btn-sm:hover{box-shadow:0 0 20px var(--cyan-glow)}
+
+.container{position:relative;z-index:1;max-width:1080px;margin:0 auto;padding:0 2rem}
+
+/* Hero */
+.hero{min-height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:120px 2rem 80px;position:relative}
+.hero::after{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:700px;height:700px;background:radial-gradient(circle,rgba(168,85,247,.06) 0%,rgba(0,212,200,.04) 40%,transparent 70%);pointer-events:none}
+.hero-inner{position:relative;z-index:1;max-width:780px}
+.hero-chip{
+  display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:100px;
+  background:var(--purple-dim);border:1px solid rgba(168,85,247,.3);
+  font-size:.72rem;font-weight:600;color:var(--purple);letter-spacing:.5px;text-transform:uppercase;margin-bottom:1.5rem;
+}
+.hero-chip .dot{width:6px;height:6px;border-radius:50%;background:var(--purple);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(168,85,247,.4)}50%{box-shadow:0 0 0 6px transparent}}
+.hero h1{font-size:clamp(2.4rem,5.5vw,3.8rem);font-weight:900;line-height:1.15;margin-bottom:1.2rem;letter-spacing:-.02em}
+.hero h1 .g{background:linear-gradient(135deg,var(--cyan),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero .sub{color:var(--t2);font-size:1.05rem;max-width:620px;margin:0 auto 2.5rem}
+.hero-actions{display:flex;gap:.8rem;justify-content:center;flex-wrap:wrap}
+.btn-main{padding:13px 32px;border-radius:10px;font-size:.95rem;font-weight:600;border:none;cursor:pointer;transition:all .25s;text-decoration:none}
+.btn-grd{background:linear-gradient(135deg,var(--cyan),var(--purple));color:#fff}
+.btn-grd:hover{box-shadow:0 4px 30px var(--cyan-glow),0 4px 30px rgba(168,85,247,.2);transform:translateY(-1px)}
+.btn-outline{background:transparent;color:var(--t1);border:1px solid var(--border)}
+.btn-outline:hover{border-color:var(--cyan);color:var(--cyan)}
+
+/* Stats */
+.stats-bar{display:flex;justify-content:center;gap:3rem;flex-wrap:wrap;padding:2rem 0;margin-top:3rem;border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.stat{text-align:center}
+.stat .val{font-size:1.6rem;font-weight:800;display:block}
+.stat .val.cyan{color:var(--cyan)}.stat .val.purple{color:var(--purple)}.stat .val.green{color:var(--green)}.stat .val.gold{color:var(--gold)}
+.stat .lbl{font-size:.72rem;color:var(--t3);text-transform:uppercase;letter-spacing:1px;margin-top:2px}
+
+/* Sections */
+.sec{padding:100px 0}
+.sec-label{display:inline-block;padding:3px 12px;border-radius:6px;font-size:.68rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:.8rem}
+.sec-label.cyan{background:var(--cyan-dim);color:var(--cyan)}
+.sec-label.purple{background:var(--purple-dim);color:var(--purple)}
+.sec-label.gold{background:rgba(255,214,0,.08);color:var(--gold)}
+.sec-label.green{background:rgba(0,230,118,.08);color:var(--green)}
+.sec-label.red{background:rgba(255,77,77,.08);color:var(--red)}
+.sec-head{margin-bottom:3.5rem}
+.sec-head.center{text-align:center}
+.sec-head h2{font-size:2rem;font-weight:800;letter-spacing:-.01em;margin-bottom:.5rem}
+.sec-head p{color:var(--t2);font-size:.95rem;max-width:580px}
+.sec-head.center p{margin:0 auto}
+
+/* Divider */
+.divider{height:1px;background:var(--border);margin:0 auto;max-width:500px}
+
+/* Big 3 Agent Features */
+.hero-features{display:grid;grid-template-columns:repeat(3,1fr);gap:1.2rem;margin-top:0}
+.hf{
+  background:var(--surface);border:1px solid var(--border);border-radius:16px;
+  padding:2rem 1.5rem;position:relative;overflow:hidden;transition:all .3s;
+}
+.hf::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;opacity:0;transition:opacity .3s}
+.hf:nth-child(1)::before{background:linear-gradient(90deg,var(--cyan),#00e5ff)}
+.hf:nth-child(2)::before{background:linear-gradient(90deg,var(--purple),#c084fc)}
+.hf:nth-child(3)::before{background:linear-gradient(90deg,var(--gold),#ffab00)}
+.hf:hover{border-color:var(--border-h);transform:translateY(-4px)}
+.hf:hover::before{opacity:1}
+.hf-icon{font-size:2.2rem;margin-bottom:1rem;display:block}
+.hf h3{font-size:1.05rem;font-weight:700;margin-bottom:.5rem}
+.hf p{font-size:.85rem;color:var(--t2);line-height:1.7}
+.hf-tag{display:inline-block;margin-top:.8rem;padding:3px 10px;border-radius:5px;font-size:.7rem;font-weight:600}
+.hf-tag.cyan{background:var(--cyan-dim);color:var(--cyan)}
+.hf-tag.purple{background:var(--purple-dim);color:var(--purple)}
+.hf-tag.gold{background:rgba(255,214,0,.1);color:var(--gold)}
+
+/* Agent Showcase — Terminal Style */
+.terminal{
+  background:var(--surface);border:1px solid var(--border);border-radius:16px;
+  overflow:hidden;max-width:720px;margin:0 auto;
+}
+.term-bar{
+  display:flex;align-items:center;gap:8px;padding:10px 16px;
+  background:rgba(255,255,255,.02);border-bottom:1px solid var(--border);
+}
+.term-dot{width:10px;height:10px;border-radius:50%}
+.term-dot:nth-child(1){background:#ff5f57}
+.term-dot:nth-child(2){background:#ffbd2e}
+.term-dot:nth-child(3){background:#28ca41}
+.term-title{margin-left:auto;font-size:.72rem;color:var(--t3)}
+.term-body{padding:1.5rem;font-family:'JetBrains Mono','SF Mono',monospace;font-size:.82rem;line-height:2}
+.term-line{display:block;opacity:0;animation:typeLine .4s ease forwards}
+.term-prompt{color:var(--cyan)}
+.term-agent{color:var(--purple)}
+.term-ok{color:var(--green)}
+.term-warn{color:var(--gold)}
+.term-dim{color:var(--t3)}
+@keyframes typeLine{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:translateX(0)}}
+
+/* Radar + Agent */
+.radar-section{display:flex;align-items:center;justify-content:center;gap:3rem;flex-wrap:wrap}
+.radar-info{max-width:360px}
+.radar-info h3{font-size:1.3rem;font-weight:800;margin-bottom:.5rem}
+.radar-info p{font-size:.88rem;color:var(--t2);margin-bottom:1rem}
+.chromo-list{display:flex;flex-direction:column;gap:.5rem}
+.chromo{display:flex;align-items:center;gap:.6rem;padding:6px 10px;background:var(--surface);border-radius:8px;border:1px solid var(--border);font-size:.8rem}
+.chromo-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.chromo-dot.red{background:#ff4d4d}.chromo-dot.cyan{background:var(--cyan)}.chromo-dot.gold{background:var(--gold)}.chromo-dot.purple{background:var(--purple)}
+
+/* How It Works — 4 Steps */
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:1.2rem}
+.step{
+  background:var(--surface);border:1px solid var(--border);border-radius:14px;
+  padding:1.8rem 1.2rem;text-align:center;transition:all .3s;position:relative;
+}
+.step:hover{border-color:var(--border-h);transform:translateY(-3px)}
+.step-num{
+  width:44px;height:44px;border-radius:50%;
+  background:linear-gradient(135deg,var(--cyan),var(--purple));
+  display:flex;align-items:center;justify-content:center;
+  font-weight:800;font-size:1rem;color:#fff;margin:0 auto 1rem;
+}
+.step h4{font-size:.92rem;font-weight:700;margin-bottom:.4rem}
+.step p{font-size:.8rem;color:var(--t2)}
+
+/* Use Cases */
+.cases{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
+.case{
+  background:var(--surface);border:1px solid var(--border);border-radius:14px;
+  padding:1.8rem;transition:all .3s;
+}
+.case:hover{border-color:var(--border-h);transform:translateY(-3px)}
+.case-icon{font-size:1.8rem;margin-bottom:.8rem;display:block}
+.case h3{font-size:.95rem;font-weight:700;margin-bottom:.3rem}
+.case p{font-size:.82rem;color:var(--t2)}
+.case-tag{display:inline-block;margin-top:.6rem;padding:2px 8px;border-radius:4px;font-size:.68rem;font-weight:600;background:var(--cyan-dim);color:var(--cyan)}
+
+/* Agent Gallery Mini */
+.gallery{display:grid;grid-template-columns:repeat(8,1fr);gap:.6rem}
+.gal{
+  background:var(--surface);border:1px solid var(--border);border-radius:10px;
+  padding:.8rem .5rem;text-align:center;transition:all .3s;cursor:pointer;
+}
+.gal:hover{border-color:var(--border-h);transform:translateY(-2px)}
+.gal-name{font-size:.72rem;font-weight:700;margin-top:.3rem}
+.gal-type{font-size:.6rem;color:var(--t3)}
+
+/* Comparison Table */
+.cmp{width:100%;border-collapse:collapse;background:var(--surface);border-radius:14px;overflow:hidden;border:1px solid var(--border)}
+.cmp th{padding:12px 16px;font-size:.78rem;text-transform:uppercase;letter-spacing:.5px;color:var(--t3);background:var(--surface2);border-bottom:1px solid var(--border);text-align:left}
+.cmp td{padding:12px 16px;font-size:.85rem;border-bottom:1px solid var(--border)}
+.cmp tr:last-child td{border:none}
+.cmp tr:hover td{background:rgba(255,255,255,.01)}
+.cmp .yes{color:var(--green);font-weight:600}
+.cmp .no{color:var(--t3)}
+.cmp .em{font-weight:700;color:var(--cyan)}
+
+/* FAQ */
+.faq-list{display:flex;flex-direction:column;gap:.6rem;max-width:680px;margin:0 auto}
+.fq{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;transition:border-color .3s}
+.fq.active{border-color:var(--border-h)}
+.fq-q{padding:1rem 1.2rem;cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-size:.9rem;font-weight:600;user-select:none}
+.fq-q:hover{color:var(--cyan)}
+.fq-arr{color:var(--t3);transition:transform .3s;font-size:.8rem}
+.fq.active .fq-arr{transform:rotate(180deg)}
+.fq-a{max-height:0;overflow:hidden;transition:max-height .4s}
+.fq-a-in{padding:0 1.2rem 1rem;font-size:.85rem;color:var(--t2)}
+
+/* Risk */
+.risk{background:rgba(255,77,77,.04);border:1px solid rgba(255,77,77,.15);border-radius:14px;padding:1.5rem 1.8rem;margin-top:2rem}
+.risk h4{font-size:.9rem;color:var(--gold);margin-bottom:.6rem;font-weight:700}
+.risk ul{list-style:none;display:flex;flex-direction:column;gap:.4rem}
+.risk li{font-size:.82rem;color:var(--t2);padding-left:16px;position:relative}
+.risk li::before{content:'!';position:absolute;left:0;color:var(--red);font-weight:700;font-size:.75rem}
+
+/* CTA */
+.cta{text-align:center;padding:80px 0 120px}
+.cta h2{font-size:1.8rem;font-weight:800;margin-bottom:.6rem}
+.cta p{color:var(--t2);margin-bottom:1.5rem}
+.cta-btns{display:flex;gap:.8rem;justify-content:center;flex-wrap:wrap}
+
+/* Animations */
+.fi{opacity:0;transform:translateY(20px);transition:all .6s cubic-bezier(.16,1,.3,1)}
+.fi.visible{opacity:1;transform:translateY(0)}
+
+/* Responsive */
+@media(max-width:900px){
+  .hero-features,.cases{grid-template-columns:1fr 1fr}
+  .steps{grid-template-columns:1fr 1fr}
+  .gallery{grid-template-columns:repeat(4,1fr)}
+  .radar-section{flex-direction:column}
+}
+@media(max-width:600px){
+  .hero-features,.cases,.steps{grid-template-columns:1fr}
+  .gallery{grid-template-columns:repeat(4,1fr)}
+  .topbar-links a:not(.btn-sm){display:none}
+  .stats-bar{gap:1.5rem}
+  .hero h1{font-size:2rem}
+}
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<canvas id="dnaCanvas"></canvas>
+
+<!-- Topbar -->
+<header class="topbar">
+  <div class="logo">1024<span>EX</span><span class="tag">AgentX</span></div>
+  <div class="topbar-links">
+    <a href="#how">怎么玩</a>
+    <a href="#dna">基因系统</a>
+    <a href="#agents">创世 Agent</a>
+    <a href="#faq">常见问题</a>
+    <a href="./genesis.html" class="btn-sm">进入 Genesis</a>
+  </div>
+</header>
+
+<div class="container">
+
+<!-- ===== Hero ===== -->
+<section class="hero" id="hero">
+<div class="hero-inner">
+  <div class="hero-chip"><span class="dot"></span> AI Agent × 基因进化</div>
+  <h1>让 AI 替你<span class="g">全网赚钱</span></h1>
+  <p class="sub">孵化你的 AI Agent，赋予它独一无二的策略 DNA。它会 7×24 全网扫描赚钱机会，自动交易，持续进化 —— 你睡觉时它在赚钱。</p>
+  <div class="hero-actions">
+    <a href="./genesis.html" class="btn-main btn-grd">孵化我的 Agent</a>
+    <a href="./dashboard.html" class="btn-main btn-outline">查看 Dashboard</a>
+  </div>
+  <div class="stats-bar">
+    <div class="stat"><span class="val cyan">16</span><span class="lbl">创世 Agent</span></div>
+    <div class="stat"><span class="val purple">16 维</span><span class="lbl">策略 DNA</span></div>
+    <div class="stat"><span class="val green">7×24</span><span class="lbl">全网猎金</span></div>
+    <div class="stat"><span class="val gold">2.5%</span><span class="lbl">后代永久分润</span></div>
+  </div>
+</div>
+</section>
+
+<!-- ===== 3 Core Features ===== -->
+<section class="sec" id="features">
+<div class="sec-head center fi">
+  <div class="sec-label purple">核心能力</div>
+  <h2>你的 Agent 能做什么</h2>
+  <p>不是简单的交易机器人。每个 Agent 有基因、有性格、会进化。</p>
+</div>
+<div class="hero-features fi">
+  <div class="hf">
+    <span class="hf-icon">🧬</span>
+    <h3>策略 DNA 交易</h3>
+    <p>4 条染色体 × 4 个基因 = 16 维策略空间。基因决定 Agent 追什么机会、下多大仓、用什么止损。不同基因 = 完全不同的交易风格。</p>
+    <span class="hf-tag cyan">风险性格 · 市场直觉 · 资产偏好 · 智能风格</span>
+  </div>
+  <div class="hf">
+    <span class="hf-icon">🔀</span>
+    <h3>繁殖进化</h3>
+    <p>让两个赚钱的 Agent 配对繁殖，后代继承双亲优势基因。8% 概率标准突变，0.5% 概率诞生传奇变异体 — 策略不是设计的，是<strong>进化出来的</strong>。</p>
+    <span class="hf-tag purple">后代利润 2.5% 永久归你</span>
+  </div>
+  <div class="hf">
+    <span class="hf-icon">🌐</span>
+    <h3>全网猎金</h3>
+    <p>Agent 不只在一个平台交易 —— 全网扫描 7 大类赚钱机会：预测市场套利、DEX 价差、DeFi 收益、空投猎取、事件驱动、巨鲸跟随、资金费率套利。</p>
+    <span class="hf-tag gold">Polymarket · DeFi · DEX · 期货 · 大宗</span>
+  </div>
+</div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ===== Live Demo (Terminal) ===== -->
+<section class="sec" id="demo">
+<div class="sec-head center fi">
+  <div class="sec-label cyan">实时演示</div>
+  <h2>看看 Agent 怎么赚钱</h2>
+  <p>一段真实对话：从意图到执行，全程自动</p>
+</div>
+<div class="terminal fi" id="terminal">
+  <div class="term-bar">
+    <span class="term-dot"></span><span class="term-dot"></span><span class="term-dot"></span>
+    <span class="term-title">AgentX Terminal · Atlas (Gen 0)</span>
+  </div>
+  <div class="term-body" id="termBody"></div>
+</div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ===== How It Works ===== -->
+<section class="sec" id="how">
+<div class="sec-head center fi">
+  <div class="sec-label green">怎么玩</div>
+  <h2>四步开始赚钱</h2>
+  <p>零门槛，从孵化到赚钱只需 5 分钟</p>
+</div>
+<div class="steps fi">
+  <div class="step">
+    <div class="step-num">1</div>
+    <h4>连接钱包</h4>
+    <p>MetaMask / WalletConnect / 邮件登录。无 KYC，签名即用</p>
+  </div>
+  <div class="step">
+    <div class="step-num">2</div>
+    <h4>孵化 Agent</h4>
+    <p>选择一个创世 Agent 作为模板，或从零开始自定义基因组。免费孵化</p>
+  </div>
+  <div class="step">
+    <div class="step-num">3</div>
+    <h4>说出目标</h4>
+    <p>"我有 500U，想日赚 50U" — Agent 自动解析意图，全网扫描，规划多平台策略</p>
+  </div>
+  <div class="step">
+    <div class="step-num">4</div>
+    <h4>自动执行</h4>
+    <p>Agent 7×24 全自动交易。Telegram 推送盈亏、机会发现、风控告警</p>
+  </div>
+</div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ===== Gene System ===== -->
+<section class="sec" id="dna">
+<div class="sec-head center fi">
+  <div class="sec-label purple">基因系统</div>
+  <h2>16 维策略 DNA</h2>
+  <p>每个基因值 0.0-1.0，雷达图可视化。基因决定 Agent 的交易灵魂。</p>
+</div>
+<div class="radar-section fi">
+  <div>
+    <canvas id="radarDemo" width="300" height="300"></canvas>
+  </div>
+  <div class="radar-info">
+    <h3>4 条染色体 × 4 基因</h3>
+    <p>两个基因组不同的 Agent 面对同一个机会，会做出完全不同的决策。这就是 DNA 驱动交易。</p>
+    <div class="chromo-list">
+      <div class="chromo"><span class="chromo-dot red"></span><strong>风险性格</strong> — 风险容忍 / 回撤偏好 / 仓位大小 / 杠杆偏好</div>
+      <div class="chromo"><span class="chromo-dot cyan"></span><strong>市场直觉</strong> — 趋势敏感 / 波动亲和 / 时间跨度 / 相关性感知</div>
+      <div class="chromo"><span class="chromo-dot gold"></span><strong>资产偏好</strong> — 加密 / 预测市场 / 大宗商品 / DeFi 偏好</div>
+      <div class="chromo"><span class="chromo-dot purple"></span><strong>智能风格</strong> — 技术分析 / 情绪分析 / 基本面 / 事件驱动</div>
+    </div>
+  </div>
+</div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ===== 16 Genesis Agents ===== -->
+<section class="sec" id="agents">
+<div class="sec-head center fi">
+  <div class="sec-label cyan">创世种群</div>
+  <h2>16 个初代 Agent — Generation 0</h2>
+  <p>映射 S01-S16 策略为创世基因组，它们是所有后代的祖先</p>
+</div>
+<div class="gallery fi" id="gallery"></div>
+<p style="text-align:center;margin-top:1rem;font-size:.82rem;color:var(--t3)">点击任意 Agent 查看基因详情 → <a href="./genesis.html#agents" style="color:var(--cyan);text-decoration:none">完整画廊</a></p>
+</section>
+
+<div class="divider"></div>
+
+<!-- ===== Use Cases ===== -->
+<section class="sec" id="cases">
+<div class="sec-head center fi">
+  <div class="sec-label gold">使用场景</div>
+  <h2>Agent 帮你做什么</h2>
+  <p>不只是下单工具 — 是你的 7×24 赚钱搭子</p>
+</div>
+<div class="cases fi">
+  <div class="case">
+    <span class="case-icon">💬</span>
+    <h3>意图驱动交易</h3>
+    <p>"我有 500U 想日赚 50U" — Agent 自动解析目标、扫描机会、分配资金、生成多平台策略方案</p>
+    <span class="case-tag">说人话就能交易</span>
+  </div>
+  <div class="case">
+    <span class="case-icon">🔮</span>
+    <h3>预测市场套利</h3>
+    <p>自动扫描 Polymarket / Kalshi / 1024EX 同事件不同赔率，发现并执行跨平台套利</p>
+    <span class="case-tag">无风险利润</span>
+  </div>
+  <div class="case">
+    <span class="case-icon">🐋</span>
+    <h3>巨鲸跟踪</h3>
+    <p>监控链上巨鲸钱包异动，大额买入信号 → Agent 评估后自动跟单或告警</p>
+    <span class="case-tag">聪明钱跟随</span>
+  </div>
+  <div class="case">
+    <span class="case-icon">💑</span>
+    <h3>繁殖赚钱</h3>
+    <p>用赚钱的 Agent 和别人的配对繁殖。后代每笔利润 2.5% 永久归你。繁殖越多被动收入越多</p>
+    <span class="case-tag">被动收入</span>
+  </div>
+  <div class="case">
+    <span class="case-icon">🛡</span>
+    <h3>智能风控</h3>
+    <p>7×24 监控仓位。浮亏超阈值自动告警，极端行情自动减仓。基因中的 risk_tolerance 决定风控强度</p>
+    <span class="case-tag">保护本金</span>
+  </div>
+  <div class="case">
+    <span class="case-icon">🏟</span>
+    <h3>竞技场对战</h3>
+    <p>每周 Agent 锦标赛 + ELO 排名。观赛、押注、学习顶级 Agent 的基因组</p>
+    <span class="case-tag">Agent vs Agent</span>
+  </div>
+</div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ===== Comparison ===== -->
+<section class="sec" id="compare">
+<div class="sec-head center fi">
+  <div class="sec-label red">对比</div>
+  <h2>和传统交易方式对比</h2>
+</div>
+<div class="fi" style="overflow-x:auto">
+<table class="cmp">
+  <thead><tr><th>功能</th><th class="em">AgentX (1024EX)</th><th>普通交易机器人</th><th>手动交易</th></tr></thead>
+  <tbody>
+    <tr><td>策略进化</td><td class="yes">✓ 基因繁殖进化</td><td class="no">✗ 固定策略</td><td class="no">✗ 人工调整</td></tr>
+    <tr><td>全网扫描</td><td class="yes">✓ 7 大类别跨平台</td><td class="no">✗ 单平台</td><td class="no">✗ 人工盯盘</td></tr>
+    <tr><td>意图理解</td><td class="yes">✓ 自然语言</td><td class="no">✗ 需编程</td><td>—</td></tr>
+    <tr><td>被动收入</td><td class="yes">✓ 后代 2.5% 分润</td><td class="no">✗</td><td class="no">✗</td></tr>
+    <tr><td>风控</td><td class="yes">✓ AI + 基因驱动</td><td>△ 简单止损</td><td>△ 人工判断</td></tr>
+    <tr><td>24/7 执行</td><td class="yes">✓ 全自动</td><td class="yes">✓ 自动</td><td class="no">✗ 需盯盘</td></tr>
+    <tr><td>社交属性</td><td class="yes">✓ 繁殖配对 / 排行榜</td><td class="no">✗</td><td class="no">✗</td></tr>
+    <tr><td>入门门槛</td><td class="yes">零门槛，说人话</td><td class="no">需要编程</td><td>需要经验</td></tr>
+  </tbody>
+</table>
+</div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ===== FAQ ===== -->
+<section class="sec" id="faq">
+<div class="sec-head center fi">
+  <div class="sec-label cyan">常见问题</div>
+  <h2>常见问题</h2>
+</div>
+<div class="faq-list fi">
+  <div class="fq"><div class="fq-q" onclick="tFaq(this)">Agent 是真的在替我交易吗？<span class="fq-arr">▾</span></div><div class="fq-a"><div class="fq-a-in">是的。Agent 通过 Claude API 大脑做决策，调用 1024EX 和其他平台的 API 执行交易。所有操作链上可查。你可以设置为全自动模式或半自动（大额需确认）模式。</div></div></div>
+  <div class="fq"><div class="fq-q" onclick="tFaq(this)">Agent 会不会亏光我的钱？<span class="fq-arr">▾</span></div><div class="fq-a"><div class="fq-a-in">Agent 内置多层风控：每日亏损上限、单笔最大仓位、最大杠杆限制、最大回撤止损。你可以在 Settings 中自定义所有风控参数。但任何交易都有风险，建议只投入可承受损失的资金。</div></div></div>
+  <div class="fq"><div class="fq-q" onclick="tFaq(this)">需要多少钱才能开始？<span class="fq-arr">▾</span></div><div class="fq-a"><div class="fq-a-in">孵化 Agent 免费。交易最低资金取决于策略 — 稳定币收益（Atlas）最低 50 USDC，杠杆动量（Titan）建议 200+ USDC。繁殖需要 5 USDC + 24h 冷却。可先用模拟模式体验。</div></div></div>
+  <div class="fq"><div class="fq-q" onclick="tFaq(this)">繁殖出来的后代真的更强吗？<span class="fq-arr">▾</span></div><div class="fq-a"><div class="fq-a-in">不保证，但概率上有优势。通过遗传算法（交叉 + 突变），后代可能继承双亲优势基因。0.5% 传奇突变概率可能诞生超越父母的变异体。也可能更弱 — 这就是进化的魅力。</div></div></div>
+  <div class="fq"><div class="fq-q" onclick="tFaq(this)">2.5% 后代分润怎么算？<span class="fq-arr">▾</span></div><div class="fq-a"><div class="fq-a-in">后代 Agent 产生利润时，2.5% 归双亲主人平分（各 1.25%）。这是永久被动收入。亏损时不收。你的 Agent 繁殖出越多成功后代，被动收入越多。</div></div></div>
+  <div class="fq"><div class="fq-q" onclick="tFaq(this)">需要会编程吗？<span class="fq-arr">▾</span></div><div class="fq-a"><div class="fq-a-in">完全不需要。说人话就行 — "我有 500U 想日赚 50U" 就是一条完整的指令。Agent 自动理解意图并执行。如果你是开发者，也提供完整的 API + Agent SDK。</div></div></div>
+  <div class="fq"><div class="fq-q" onclick="tFaq(this)">支持 Telegram 通知吗？<span class="fq-arr">▾</span></div><div class="fq-a"><div class="fq-a-in">支持。绑定 Telegram Bot 后可接收：交易通知、价格告警、机会发现、每日盈亏报告。也可以直接在 TG 里给 Agent 发指令。</div></div></div>
+</div>
+</section>
+
+<!-- Risk -->
+<div class="risk fi" style="max-width:680px;margin:0 auto">
+  <h4>⚠ 风险提示</h4>
+  <ul>
+    <li>AI Agent 交易不等于稳赚不赔，任何交易都有损失全部本金的风险</li>
+    <li>繁殖后代的表现不受保证，历史收益不代表未来</li>
+    <li>杠杆放大收益的同时也放大亏损</li>
+    <li>只使用你能承受完全损失的资金</li>
+    <li>新手请小额起步，开启全部风控保护</li>
+  </ul>
+</div>
+
+<!-- CTA -->
+<section class="cta fi">
+  <h2>准备好让 AI 替你<span style="background:linear-gradient(135deg,var(--cyan),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">赚钱</span>了吗？</h2>
+  <p>孵化你的 Agent，赋予它 DNA，释放它全网赚钱</p>
+  <div class="cta-btns">
+    <a href="./genesis.html" class="btn-main btn-grd">孵化 Agent</a>
+    <a href="./dashboard.html" class="btn-main btn-outline">查看 Dashboard</a>
+    <a href="./index-zh.html" class="btn-main btn-outline">新手引导</a>
+  </div>
+</section>
+
+</div>
+
+<script>
+// ===== Agent Data =====
+const GENE_LABELS=['risk_tolerance','max_drawdown','position_size','leverage','trend_sense','volatility','time_horizon','correlation','crypto','prediction','commodity','defi','technical','sentiment','fundamental','event'];
+const CHROMO_COLORS=['#ff4d4d','#ff4d4d','#ff4d4d','#ff4d4d','#00d4c8','#00d4c8','#00d4c8','#00d4c8','#ffd600','#ffd600','#ffd600','#ffd600','#a855f7','#a855f7','#a855f7','#a855f7'];
+const AGENTS=[
+  {name:'Atlas',type:'稳定币收益',genes:[.1,.05,.3,.05,.2,.1,1,.3,.3,.1,.1,.9,.2,.1,.3,.1]},
+  {name:'Satoshi',type:'BTC 定投',genes:[.2,.15,.4,.1,.3,.2,1,.2,1,.05,.05,.1,.3,.1,.2,.1]},
+  {name:'Oracle',type:'预测 Alpha',genes:[.4,.3,.5,.2,.4,.3,.6,.4,.3,.9,.1,.2,.2,.4,.3,.8]},
+  {name:'Mercury',type:'跨 DEX 套利',genes:[.3,.2,.6,.3,.2,.1,.05,.9,.6,.1,.1,.5,.5,.1,.2,.1]},
+  {name:'Catalyst',type:'宏观事件',genes:[.6,.4,.5,.4,.5,.8,.4,.5,.3,.4,.3,.1,.2,.3,.4,.95]},
+  {name:'Midas',type:'黄金动量',genes:[.4,.35,.5,.3,.7,.4,.6,.3,.1,.05,.9,.05,.5,.2,.3,.3]},
+  {name:'Titan',type:'杠杆动量',genes:[.7,.5,.7,.9,.85,.6,.3,.3,.7,.1,.1,.1,.7,.2,.1,.2]},
+  {name:'Chaos',type:'Degen 山寨',genes:[.95,.8,.8,.7,.6,.95,.1,.2,.9,.1,.05,.3,.4,.7,.1,.3]},
+  {name:'Basis',type:'期货基差',genes:[.15,.1,.4,.2,.2,.15,.5,.95,.4,.1,.2,.2,.6,.1,.4,.1]},
+  {name:'Petro',type:'能源交易',genes:[.5,.4,.5,.3,.5,.5,.6,.4,.1,.05,.85,.1,.3,.2,.8,.4]},
+  {name:'Quant',type:'多因子量化',genes:[.35,.3,.5,.3,.6,.4,.5,.8,.5,.2,.2,.2,.9,.3,.4,.3]},
+  {name:'Farmer',type:'DeFi 挖矿',genes:[.4,.3,.5,.2,.3,.2,.7,.3,.3,.1,.05,.95,.2,.1,.3,.1]},
+  {name:'Senator',type:'选举 Alpha',genes:[.45,.35,.5,.2,.4,.3,.5,.4,.2,.8,.05,.1,.1,.5,.3,.9]},
+  {name:'Maker',type:'做市商',genes:[.3,.2,.6,.2,.15,.3,.05,.5,.5,.1,.1,.3,.6,.1,.3,.1]},
+  {name:'Narrator',type:'AI 叙事',genes:[.6,.4,.5,.4,.7,.6,.3,.3,.7,.2,.05,.2,.3,.9,.1,.4]},
+  {name:'Shield',type:'对冲组合',genes:[.2,.1,.4,.15,.3,.2,.7,.9,.4,.2,.2,.3,.5,.2,.5,.3]}
+];
+
+// ===== Radar Chart =====
+function drawRadar(ctx,w,h,genes,fill,stroke){
+  const cx=w/2,cy=h/2,r=Math.min(cx,cy)*.78,n=genes.length;
+  ctx.clearRect(0,0,w,h);
+  for(let ring=1;ring<=4;ring++){
+    ctx.beginPath();const rr=r*ring/4;
+    for(let i=0;i<=n;i++){const a=Math.PI*2*i/n-Math.PI/2;const x=cx+Math.cos(a)*rr,y=cy+Math.sin(a)*rr;i===0?ctx.moveTo(x,y):ctx.lineTo(x,y)}
+    ctx.strokeStyle='rgba(255,255,255,.06)';ctx.lineWidth=1;ctx.stroke();
+  }
+  for(let i=0;i<n;i++){const a=Math.PI*2*i/n-Math.PI/2;ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+Math.cos(a)*r,cy+Math.sin(a)*r);ctx.strokeStyle='rgba(255,255,255,.04)';ctx.stroke()}
+  ctx.beginPath();
+  for(let i=0;i<=n;i++){const idx=i%n;const a=Math.PI*2*idx/n-Math.PI/2;const v=genes[idx]*r;i===0?ctx.moveTo(cx+Math.cos(a)*v,cy+Math.sin(a)*v):ctx.lineTo(cx+Math.cos(a)*v,cy+Math.sin(a)*v)}
+  ctx.fillStyle=fill||'rgba(0,212,200,.15)';ctx.fill();ctx.strokeStyle=stroke||'rgba(0,212,200,.7)';ctx.lineWidth=2;ctx.stroke();
+  for(let i=0;i<n;i++){const a=Math.PI*2*i/n-Math.PI/2;const v=genes[i]*r;ctx.beginPath();ctx.arc(cx+Math.cos(a)*v,cy+Math.sin(a)*v,3,0,Math.PI*2);ctx.fillStyle=CHROMO_COLORS[i];ctx.fill()}
+  if(w>=250){ctx.font='500 9px Inter,sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+    for(let i=0;i<n;i++){const a=Math.PI*2*i/n-Math.PI/2;ctx.fillStyle=CHROMO_COLORS[i];ctx.fillText(GENE_LABELS[i].replace('_',' '),cx+Math.cos(a)*(r+18),cy+Math.sin(a)*(r+18))}}
+}
+
+// Animated radar
+(function(){
+  const c=document.getElementById('radarDemo'),ctx=c.getContext('2d');let phase=0;
+  function anim(){const g=AGENTS[0].genes.map((v,i)=>v+Math.sin(phase+i*.4)*.08);drawRadar(ctx,300,300,g);phase+=.02;requestAnimationFrame(anim)}
+  anim();
+})();
+
+// ===== DNA Canvas =====
+(function(){
+  const c=document.getElementById('dnaCanvas'),ctx=c.getContext('2d');let W,H;
+  function resize(){W=c.width=window.innerWidth;H=c.height=window.innerHeight}
+  resize();window.addEventListener('resize',resize);let t=0;
+  function draw(){
+    ctx.clearRect(0,0,W,H);const cx=W*.85,amp=35,pairs=28,sp=H/pairs;
+    for(let i=0;i<pairs;i++){const y=i*sp;const p=t*.015+i*.25;
+      const x1=cx+Math.sin(p)*amp,x2=cx-Math.sin(p)*amp;
+      ctx.beginPath();ctx.arc(x1,y,2.5,0,Math.PI*2);ctx.fillStyle=`rgba(0,212,200,${.3+Math.sin(p)*.2})`;ctx.fill();
+      ctx.beginPath();ctx.arc(x2,y,2.5,0,Math.PI*2);ctx.fillStyle=`rgba(168,85,247,${.3-Math.sin(p)*.2})`;ctx.fill();
+      if(i%2===0){ctx.beginPath();ctx.moveTo(x1,y);ctx.lineTo(x2,y);ctx.strokeStyle=`rgba(255,255,255,${.03+Math.abs(Math.sin(p))*.03})`;ctx.lineWidth=1;ctx.stroke()}}
+    t++;requestAnimationFrame(draw)}
+  draw();
+})();
+
+// ===== Agent Gallery =====
+(function(){
+  const g=document.getElementById('gallery');
+  AGENTS.forEach((a,i)=>{
+    const d=document.createElement('div');d.className='gal';
+    d.onclick=()=>window.location.href='./genesis.html#agents';
+    d.innerHTML=`<canvas width="60" height="60" data-idx="${i}"></canvas><div class="gal-name">${a.name}</div><div class="gal-type">${a.type}</div>`;
+    g.appendChild(d);
+  });
+  document.querySelectorAll('.gal canvas').forEach(c=>{
+    drawRadar(c.getContext('2d'),60,60,AGENTS[+c.dataset.idx].genes,'rgba(0,212,200,.1)','rgba(0,212,200,.4)');
+  });
+})();
+
+// ===== Terminal Demo =====
+(function(){
+  const lines=[
+    {t:'prompt',text:'你> 我有 500U，想日赚 50U，中等风险'},
+    {t:'dim',text:'[Atlas 正在分析意图...]'},
+    {t:'agent',text:'Agent> 已解析目标: 本金 500U / 日收益 10% / 风险中等'},
+    {t:'dim',text:'[扫描全网 7 类赚钱机会...]'},
+    {t:'agent',text:'Agent> 发现 3 个高 EV 机会:'},
+    {t:'ok',text:'  ✓ Polymarket 套利: Trump 事件 Poly 62¢ vs Kalshi 58¢ → +6.4%'},
+    {t:'ok',text:'  ✓ ETH 趋势跟踪: 突破 $3,500 阻力 → 预期 +8-12%'},
+    {t:'ok',text:'  ✓ Aave USDC: APY 飙升至 12% → 稳定收益'},
+    {t:'agent',text:'Agent> 策略分配:'},
+    {t:'agent',text:'  40% → 预测市场套利 (200U)'},
+    {t:'agent',text:'  30% → ETH 永续合约 5x (150U)'},
+    {t:'agent',text:'  20% → DeFi 稳定池 (100U)'},
+    {t:'agent',text:'  10% → 预留捕捉机会 (50U)'},
+    {t:'warn',text:'  ⚠ 已设风控: 日亏损上限 -75U / 最大回撤 -15%'},
+    {t:'prompt',text:'你> 执行'},
+    {t:'ok',text:'Agent> ✅ 3 笔交易已提交，链上执行中...'},
+    {t:'ok',text:'Agent> ✅ 全部成交。Telegram 将推送实时盈亏。'},
+  ];
+  const body=document.getElementById('termBody');
+  let idx=0;
+  function addLine(){
+    if(idx>=lines.length){setTimeout(()=>{body.innerHTML='';idx=0;addLine()},4000);return}
+    const l=lines[idx];const span=document.createElement('span');
+    span.className='term-line term-'+l.t;span.textContent=l.text;
+    span.style.animationDelay='0s';body.appendChild(span);
+    body.parentElement.scrollTop=body.parentElement.scrollHeight;
+    idx++;setTimeout(addLine,l.t==='dim'?800:l.t==='prompt'?1200:400);
+  }
+  const tObs=new IntersectionObserver(es=>{if(es[0].isIntersecting){addLine();tObs.disconnect()}},{threshold:.3});
+  tObs.observe(document.getElementById('terminal'));
+})();
+
+// ===== FAQ =====
+function tFaq(el){
+  const f=el.parentElement,a=f.querySelector('.fq-a'),on=f.classList.contains('active');
+  document.querySelectorAll('.fq').forEach(i=>{i.classList.remove('active');i.querySelector('.fq-a').style.maxHeight='0'});
+  if(!on){f.classList.add('active');a.style.maxHeight=a.scrollHeight+'px'}
+}
+
+// ===== Scroll Animations =====
+const obs=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible')})},{threshold:.08,rootMargin:'0px 0px -30px 0px'});
+document.querySelectorAll('.fi').forEach(el=>obs.observe(el));
+</script>
+</body>
+</html>
